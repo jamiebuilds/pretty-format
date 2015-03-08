@@ -6,3 +6,28 @@
 [![devDependency Status](https://david-dm.org/thejameskyle/pretty-format/dev-status.svg)](https://david-dm.org/thejameskyle/pretty-format#info=devDependencies)
 
 Stringify any JavaScript value.
+
+![](http://i.imgur.com/UM7RQza.png)
+
+
+### Example
+
+```js
+import prettyFormat from 'pretty-format';
+
+var obj = { foo: 1 };
+obj.self = obj;
+obj[Symbol('foo')] = 'foo';
+obj.bar = new Map();
+obj.bar.set('baz', 'bat');
+
+console.log(prettyFormat(obj));
+// Object {
+//   "foo": 1,
+//   "self": [Circular],
+//   "bar": Map {
+//     "baz" => "bat"
+//   },
+//   Symbol(foo): "foo"
+// }
+```
