@@ -1,4 +1,3 @@
-/* global Symbol */
 import _ from 'lodash';
 
 const STATE = {};
@@ -13,7 +12,7 @@ function indentLines(str) {
  * @public
  * @class Type
  */
-export function Type(options) {
+function Type(options) {
   this.test = options.test;
   this.print = options.print;
 }
@@ -365,7 +364,7 @@ Type.all = [
   Type.Undefined
 ];
 
-export function reset() {
+function reset() {
   STATE.visitedRefs = [];
   STATE.prevVisitedRefs = null;
   STATE.depth = 0;
@@ -402,3 +401,6 @@ export default function print(val) {
     return result;
   }
 }
+
+print.Type = Type;
+print.reset = reset;

@@ -1,4 +1,8 @@
 {
+  "globals": {
+    "Symbol" : true
+  },
+
   "bitwise"       : true,
   "camelcase"     : true,
   "eqeqeq"        : true,
