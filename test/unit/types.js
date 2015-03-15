@@ -222,14 +222,19 @@ describe('Type', function() {
   }());
 
   (function() {
+    function Foo() {}
+    var foo = new Foo();
+
     typeTests('Object', Type.Object, {
       test: [
         { value: {}, pass: true },
-        { value: new Map(), pass: false },
-        { value: [], pass: false }
+        { value: foo, pass: true },
+        { value: new Map(), pass: true },
+        { value: [], pass: true }
       ],
       print: [
         { input: {}, output: 'Object {}' },
+        { input: foo, output: 'Foo {}' },
         { input: { foo: 'bar', bar: 'baz' }, output: 'Object {\n  "foo": "bar",\n  "bar": "baz"\n}' },
         { input: { foo: { bar: 'baz' } }, output: 'Object {\n  "foo": Object {\n    "bar": "baz"\n  }\n}' },
         { input: { [Symbol('foo')]: 'foo' }, output: 'Object {\n  Symbol(foo): "foo"\n}' }

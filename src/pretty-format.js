@@ -279,10 +279,10 @@ Type.Number = new Type({
  * @memberOf Type
  */
 Type.Object = new Type({
-  test: _.isPlainObject,
+  test: _.isObject,
 
   print(val) {
-    var result = 'Object {',
+    var result = val.constructor.name + ' {',
         keys = _.keys(val),
         symbols = getSymbols(val);
 
@@ -420,11 +420,12 @@ Type.all = [
   Type.NaN,
   Type.Null,
   Type.Number,
-  Type.Object,
   Type.RegExp,
   Type.Set,
   Type.String,
   Type.Symbol,
   Type.Undefined,
-  Type.Date
+  Type.Date,
+
+  Type.Object
 ];
