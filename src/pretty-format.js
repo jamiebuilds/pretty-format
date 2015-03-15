@@ -25,6 +25,47 @@ function Type(options) {
   this.print = options.print;
 }
 
+function reset() {
+  STATE.visitedRefs = [];
+  STATE.prevVisitedRefs = null;
+  STATE.depth = 0;
+}
+
+reset();
+
+export default function prettyFormat(val) {
+  if (STATE.depth === 0) {
+    reset();
+  }
+
+  STATE.prevVisitedRefs = STATE.visitedRefs;
+  STATE.visitedRefs = [].concat(STATE.visitedRefs);
+  STATE.depth++;
+
+  var result, error;
+  try {
+    result = _.find(Type.all, type => type.test(val)).print(val);
+  } catch(e) {
+    error = e;
+  }
+
+  STATE.depth--;
+  STATE.visitedRefs = STATE.prevVisitedRefs;
+
+  if (STATE.depth === 0) {
+    reset();
+  }
+
+  if (error) {
+    throw error;
+  } else {
+    return result;
+  }
+}
+
+prettyFormat.Type = Type;
+prettyFormat.reset = reset;
+
 /**
  * @public
  * @class Array
@@ -41,7 +82,7 @@ Type.Array = new Type({
       result += '\n';
 
       for (var i = 0; i < val.length; i++) {
-        result += indentLines(print(val[i]));
+        result += indentLines(prettyFormat(val[i]));
 
         if (i < val.length - 1) {
           result += ',\n';
@@ -170,8 +211,8 @@ Type.Map = new Type({
       result += '\n';
 
       while (!current.done) {
-        var key = print(current.value[0]);
-        var value = print(current.value[1]);
+        var key = prettyFormat(current.value[0]);
+        var value = prettyFormat(current.value[1]);
 
         result += indentLines(key + ' => ' + value);
 
@@ -254,8 +295,8 @@ Type.Object = new Type({
 
       for (var i = 0; i < keys.length; i++) {
         var key = keys[i];
-        var name = print(key);
-        var value = print(val[key]);
+        var name = prettyFormat(key);
+        var value = prettyFormat(val[key]);
 
         result += indentLines(name + ': ' + value);
 
@@ -305,7 +346,7 @@ Type.Set = new Type({
       result += '\n';
 
       while (!current.done) {
-        var value = print(current.value[1]);
+        var value = prettyFormat(current.value[1]);
 
         result += indentLines(value);
 
@@ -387,44 +428,3 @@ Type.all = [
   Type.Undefined,
   Type.Date
 ];
-
-function reset() {
-  STATE.visitedRefs = [];
-  STATE.prevVisitedRefs = null;
-  STATE.depth = 0;
-}
-
-reset();
-
-export default function print(val) {
-  if (STATE.depth === 0) {
-    reset();
-  }
-
-  STATE.prevVisitedRefs = STATE.visitedRefs;
-  STATE.visitedRefs = [].concat(STATE.visitedRefs);
-  STATE.depth++;
-
-  var result, error;
-  try {
-    result = _.find(Type.all, type => type.test(val)).print(val);
-  } catch(e) {
-    error = e;
-  }
-
-  STATE.depth--;
-  STATE.visitedRefs = STATE.prevVisitedRefs;
-
-  if (STATE.depth === 0) {
-    reset();
-  }
-
-  if (error) {
-    throw error;
-  } else {
-    return result;
-  }
-}
-
-print.Type = Type;
-print.reset = reset;
