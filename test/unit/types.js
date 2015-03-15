@@ -204,6 +204,20 @@ describe('Type', function() {
   }());
 
   (function() {
+    typeTests('Date', Type.Date, {
+      test: [
+        { value: new Date(10e11), pass: true },
+        { value: NaN, pass: false },
+        { value: false, pass: false }
+      ],
+      print: [
+        { input: new Date(10e11), output: '2001-09-09T01:46:40.000Z' },
+        { input: new Date(new Date(20e11)), output: '2033-05-18T03:33:20.000Z' }
+      ]
+    });
+  }());
+
+  (function() {
     typeTests('Object', Type.Object, {
       test: [
         { value: {}, pass: true },

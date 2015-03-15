@@ -85,6 +85,20 @@ Type.Circular = new Type({
 
 /**
  * @public
+ * @class Date
+ * @extends Type
+ * @memberOf Type
+ */
+Type.Date = new Type({
+  test: _.isDate,
+
+  print(val) {
+    return Date.prototype.toISOString.call(val);
+  }
+});
+
+/**
+ * @public
  * @class Error
  * @extends Type
  * @memberOf Type
@@ -361,7 +375,8 @@ Type.all = [
   Type.Set,
   Type.String,
   Type.Symbol,
-  Type.Undefined
+  Type.Undefined,
+  Type.Date
 ];
 
 function reset() {
