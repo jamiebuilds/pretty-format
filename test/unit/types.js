@@ -198,7 +198,11 @@ describe('Type', function() {
         { value: false, pass: false }
       ],
       print: [
-        { input: 2, output: '2' }
+        { input: 2, output: '2' },
+        { input: 0, output: '0' },
+        { input: -0, output: '-0' },
+        { input: Infinity, output: 'Infinity' },
+        { input: -Infinity, output: '-Infinity' }
       ]
     });
   }());

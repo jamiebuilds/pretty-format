@@ -205,7 +205,7 @@ Type.Number = new Type({
   test: _.isFinite,
 
   print(val) {
-    return Number.prototype.toString.call(val);
+    return val === 0 && (1 / val) < 0 ? '-0' : '' + val;
   }
 });
 
