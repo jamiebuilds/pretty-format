@@ -4,8 +4,16 @@ const STATE = {};
 
 const NEWLINE_REGEXP = /\n/ig;
 
+const SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
+
 function indentLines(str) {
   return '  ' + str.replace(NEWLINE_REGEXP, '\n  ');
+}
+
+function getSymbols(obj) {
+  if (typeof Object.getOwnPropertySymbols === 'function') {
+    return Object.getOwnPropertySymbols(obj);
+  }
 }
 
 /**
@@ -234,9 +242,12 @@ Type.Object = new Type({
 
   print(val) {
     var result = 'Object {',
-        keys = _.keys(val);
+        keys = _.keys(val),
+        symbols = getSymbols(val);
 
-    keys = keys.concat(Object.getOwnPropertySymbols(val));
+    if (symbols.length) {
+      keys = _.reject(keys, _.bindKey(SYMBOL_REGEXP, 'test')).concat(symbols);
+    }
 
     if (keys.length) {
       result += '\n';
@@ -325,8 +336,6 @@ Type.String = new Type({
     return '"' + val + '"';
   }
 });
-
-const SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
 
 /**
  * @public
