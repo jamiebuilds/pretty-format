@@ -7,8 +7,16 @@
 
   var NEWLINE_REGEXP = /\n/ig;
 
+  var SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
+
   function indentLines(str) {
     return "  " + str.replace(NEWLINE_REGEXP, "\n  ");
+  }
+
+  function getSymbols(obj) {
+    if (typeof Object.getOwnPropertySymbols === "function") {
+      return Object.getOwnPropertySymbols(obj);
+    }
   }
 
   /**
@@ -20,6 +28,49 @@
     this.print = options.print;
   }
 
+  function reset() {
+    STATE.visitedRefs = [];
+    STATE.prevVisitedRefs = null;
+    STATE.depth = 0;
+  }
+
+  reset();
+
+  function prettyFormat(val) {
+    if (STATE.depth === 0) {
+      reset();
+    }
+
+    STATE.prevVisitedRefs = STATE.visitedRefs;
+    STATE.visitedRefs = [].concat(STATE.visitedRefs);
+    STATE.depth++;
+
+    var result, error;
+    try {
+      result = _.find(Type.all, function (type) {
+        return type.test(val);
+      }).print(val);
+    } catch (e) {
+      error = e;
+    }
+
+    STATE.depth--;
+    STATE.visitedRefs = STATE.prevVisitedRefs;
+
+    if (STATE.depth === 0) {
+      reset();
+    }
+
+    if (error) {
+      throw error;
+    } else {
+      return result;
+    }
+  }
+
+  prettyFormat.Type = Type;
+  prettyFormat.reset = reset;
+
   /**
    * @public
    * @class Array
@@ -29,24 +80,14 @@
   Type.Array = new Type({
     test: _.isArray,
 
-    print: (function (_print) {
-      var _printWrapper = function print(_x) {
-        return _print.apply(this, arguments);
-      };
-
-      _printWrapper.toString = function () {
-        return _print.toString();
-      };
-
-      return _printWrapper;
-    })(function (val) {
+    print: function print(val) {
       var result = "[";
 
       if (val.length) {
         result += "\n";
 
         for (var i = 0; i < val.length; i++) {
-          result += indentLines(print(val[i]));
+          result += indentLines(prettyFormat(val[i]));
 
           if (i < val.length - 1) {
             result += ",\n";
@@ -57,7 +98,7 @@
       }
 
       return result + "]";
-    })
+    }
   });
 
   /**
@@ -93,6 +134,20 @@
 
     print: function print() {
       return "[Circular]";
+    }
+  });
+
+  /**
+   * @public
+   * @class Date
+   * @extends Type
+   * @memberOf Type
+   */
+  Type.Date = new Type({
+    test: _.isDate,
+
+    print: function print(val) {
+      return Date.prototype.toISOString.call(val);
     }
   });
 
@@ -151,17 +206,7 @@
       return Object.prototype.toString.call(val) === "[object Map]";
     },
 
-    print: (function (_print) {
-      var _printWrapper = function print(_x) {
-        return _print.apply(this, arguments);
-      };
-
-      _printWrapper.toString = function () {
-        return _print.toString();
-      };
-
-      return _printWrapper;
-    })(function (val) {
+    print: function print(val) {
       var result = "Map {";
       var iterator = val.entries();
       var current = iterator.next();
@@ -170,8 +215,8 @@
         result += "\n";
 
         while (!current.done) {
-          var key = print(current.value[0]);
-          var value = print(current.value[1]);
+          var key = prettyFormat(current.value[0]);
+          var value = prettyFormat(current.value[1]);
 
           result += indentLines(key + " => " + value);
 
@@ -186,7 +231,7 @@
       }
 
       return result + "}";
-    })
+    }
   });
 
   /**
@@ -227,7 +272,7 @@
     test: _.isFinite,
 
     print: function print(val) {
-      return Number.prototype.toString.call(val);
+      return val === 0 && 1 / val < 0 ? "-0" : "" + val;
     }
   });
 
@@ -238,31 +283,24 @@
    * @memberOf Type
    */
   Type.Object = new Type({
-    test: _.isPlainObject,
+    test: _.isObject,
 
-    print: (function (_print) {
-      var _printWrapper = function print(_x) {
-        return _print.apply(this, arguments);
-      };
+    print: function print(val) {
+      var result = val.constructor.name + " {",
+          keys = _.keys(val),
+          symbols = getSymbols(val);
 
-      _printWrapper.toString = function () {
-        return _print.toString();
-      };
-
-      return _printWrapper;
-    })(function (val) {
-      var result = "Object {",
-          keys = _.keys(val);
-
-      keys = keys.concat(Object.getOwnPropertySymbols(val));
+      if (symbols.length) {
+        keys = _.reject(keys, _.bindKey(SYMBOL_REGEXP, "test")).concat(symbols);
+      }
 
       if (keys.length) {
         result += "\n";
 
         for (var i = 0; i < keys.length; i++) {
           var key = keys[i];
-          var name = print(key);
-          var value = print(val[key]);
+          var name = prettyFormat(key);
+          var value = prettyFormat(val[key]);
 
           result += indentLines(name + ": " + value);
 
@@ -275,7 +313,7 @@
       }
 
       return result + "}";
-    })
+    }
   });
 
   /**
@@ -303,17 +341,7 @@
       return Object.prototype.toString.call(val) === "[object Set]";
     },
 
-    print: (function (_print) {
-      var _printWrapper = function print(_x) {
-        return _print.apply(this, arguments);
-      };
-
-      _printWrapper.toString = function () {
-        return _print.toString();
-      };
-
-      return _printWrapper;
-    })(function (val) {
+    print: function print(val) {
       var result = "Set {";
       var iterator = val.entries();
       var current = iterator.next();
@@ -322,7 +350,7 @@
         result += "\n";
 
         while (!current.done) {
-          var value = print(current.value[1]);
+          var value = prettyFormat(current.value[1]);
 
           result += indentLines(value);
 
@@ -337,7 +365,7 @@
       }
 
       return result + "}";
-    })
+    }
   });
 
   /**
@@ -353,8 +381,6 @@
       return "\"" + val + "\"";
     }
   });
-
-  var SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
 
   /**
    * @public
@@ -386,51 +412,8 @@
     }
   });
 
-  Type.all = [Type.Circular, Type.Array, Type.Boolean, Type.Error, Type.Function, Type.Infinity, Type.Map, Type.NaN, Type.Null, Type.Number, Type.Object, Type.RegExp, Type.Set, Type.String, Type.Symbol, Type.Undefined];
+  Type.all = [Type.Circular, Type.Array, Type.Boolean, Type.Error, Type.Function, Type.Infinity, Type.Map, Type.NaN, Type.Null, Type.Number, Type.RegExp, Type.Set, Type.String, Type.Symbol, Type.Undefined, Type.Date, Type.Object];
 
-  function reset() {
-    STATE.visitedRefs = [];
-    STATE.prevVisitedRefs = null;
-    STATE.depth = 0;
-  }
-
-  reset();
-
-  function print(val) {
-    if (STATE.depth === 0) {
-      reset();
-    }
-
-    STATE.prevVisitedRefs = STATE.visitedRefs;
-    STATE.visitedRefs = [].concat(STATE.visitedRefs);
-    STATE.depth++;
-
-    var result, error;
-    try {
-      result = _.find(Type.all, function (type) {
-        return type.test(val);
-      }).print(val);
-    } catch (e) {
-      error = e;
-    }
-
-    STATE.depth--;
-    STATE.visitedRefs = STATE.prevVisitedRefs;
-
-    if (STATE.depth === 0) {
-      reset();
-    }
-
-    if (error) {
-      throw error;
-    } else {
-      return result;
-    }
-  }
-
-  print.Type = Type;
-  print.reset = reset;
-
-  return print;
+  return prettyFormat;
 });
 //# sourceMappingURL=./pretty-format.js.map
