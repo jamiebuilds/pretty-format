@@ -75,6 +75,20 @@
 
   /**
    * @public
+   * @class Arguments
+   * @extends Type
+   * @memberOf Type
+   */
+  Type.Arguments = new Type({
+    test: _.isArguments,
+
+    print: function print(val) {
+      return "Arguments " + Type.Array.print(val);
+    }
+  });
+
+  /**
+   * @public
    * @class Array
    * @extends Type
    * @memberOf Type
@@ -414,7 +428,7 @@
     }
   });
 
-  Type.all = [Type.Circular, Type.Array, Type.Boolean, Type.Error, Type.Function, Type.Infinity, Type.Map, Type.NaN, Type.Null, Type.Number, Type.RegExp, Type.Set, Type.String, Type.Symbol, Type.Undefined, Type.Date, Type.Object];
+  Type.all = [Type.Circular, Type.Arguments, Type.Array, Type.Boolean, Type.Error, Type.Function, Type.Infinity, Type.Map, Type.NaN, Type.Null, Type.Number, Type.RegExp, Type.Set, Type.String, Type.Symbol, Type.Undefined, Type.Date, Type.Object];
 
   return prettyFormat;
 });
