@@ -13,6 +13,8 @@ function indentLines(str) {
 function getSymbols(obj) {
   if (typeof Object.getOwnPropertySymbols === 'function') {
     return Object.getOwnPropertySymbols(obj);
+  } else {
+    return [];
   }
 }
 
