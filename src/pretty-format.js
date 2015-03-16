@@ -70,6 +70,20 @@ prettyFormat.reset = reset;
 
 /**
  * @public
+ * @class Arguments
+ * @extends Type
+ * @memberOf Type
+ */
+Type.Arguments = new Type({
+  test: _.isArguments,
+
+  print(val) {
+    return 'Arguments ' + Type.Array.print(val);
+  }
+});
+
+/**
+ * @public
  * @class Array
  * @extends Type
  * @memberOf Type
@@ -413,6 +427,7 @@ Type.Undefined = new Type({
 Type.all = [
   Type.Circular,
 
+  Type.Arguments,
   Type.Array,
   Type.Boolean,
   Type.Error,

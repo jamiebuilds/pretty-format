@@ -47,6 +47,24 @@ describe('Type', function() {
   });
 
   (function() {
+    var args = (function() { return arguments; })(1, 2, 3);
+    var empty = (function() { return arguments; })();
+
+    typeTests('Arguments', Type.Arguments, {
+      test: [
+        { value: args, pass: true },
+        { value: empty, pass: true },
+        { value: [], pass: false },
+        { value: {}, pass: false }
+      ],
+      print: [
+        { input: args, output: 'Arguments [\n  1,\n  2,\n  3\n]' },
+        { input: empty, output: 'Arguments []' }
+      ]
+    });
+  }());
+
+  (function() {
     typeTests('Array', Type.Array, {
       test: [
         { value: [], pass: true },
