@@ -69,13 +69,17 @@ describe('Type', function() {
     typeTests('Array', Type.Array, {
       test: [
         { value: [], pass: true },
+        { value: new Uint32Array(2), pass: true },
+        { value: new ArrayBuffer(2), pass: true },
         { value: {}, pass: false },
         { value: 'foo', pass: false }
       ],
       print: [
-        { input: [], output: '[]' },
-        { input: [1], output: '[\n  1\n]' },
-        { input: [[1, 2]], output: '[\n  [\n    1,\n    2\n  ]\n]' }
+        { input: [], output: 'Array []' },
+        { input: [1], output: 'Array [\n  1\n]' },
+        { input: new Uint32Array(2), output: 'Uint32Array [\n  0,\n  0\n]' },
+        { input: new ArrayBuffer(2), output: 'ArrayBuffer []' },
+        { input: [[1, 2]], output: 'Array [\n  Array [\n    1,\n    2\n  ]\n]' }
       ]
     });
   }());
@@ -113,7 +117,7 @@ describe('Type', function() {
       ],
       print: [
         { input: obj, output: 'Object {\n  "obj": [Circular]\n}', both: false },
-        { input: arr, output: '[\n  [Circular]\n]', both: false }
+        { input: arr, output: 'Array [\n  [Circular]\n]', both: false }
       ]
     });
   }());
@@ -173,6 +177,7 @@ describe('Type', function() {
       test: [
         { value: map1, pass: true },
         { value: map2, pass: true },
+        { value: new WeakMap(), pass: false },
         { value: false, pass: false },
         { value: {}, pass: false }
       ],
@@ -288,6 +293,7 @@ describe('Type', function() {
       test: [
         { value: set1, pass: true },
         { value: set2, pass: true },
+        { value: new WeakSet(), pass: false },
         { value: false, pass: false },
         { value: {}, pass: false }
       ],
@@ -334,6 +340,32 @@ describe('Type', function() {
       ],
       print: [
         { input: undefined, output: 'undefined' }
+      ]
+    });
+  }());
+
+  (function() {
+    typeTests('WeakMap', Type.WeakMap, {
+      test: [
+        { value: new WeakMap(), pass: true },
+        { value: new Map(), pass: false },
+        { value: {}, pass: false }
+      ],
+      print: [
+        { input: new WeakMap(), output: 'WeakMap {}' }
+      ]
+    });
+  }());
+
+  (function() {
+    typeTests('WeakSet', Type.WeakSet, {
+      test: [
+        { value: new WeakSet(), pass: true },
+        { value: new Set(), pass: false },
+        { value: {}, pass: false }
+      ],
+      print: [
+        { input: new WeakSet(), output: 'WeakSet {}' }
       ]
     });
   }());

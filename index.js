@@ -72,6 +72,26 @@ prettyFormat.reset = reset;
 
 module.exports = prettyFormat;
 
+function printArray(array) {
+  var body = '';
+
+  if (array.length) {
+    body += '\n';
+
+    for (var i = 0; i < array.length; i++) {
+      body += indentLines(prettyFormat(array[i]));
+
+      if (i < array.length - 1) {
+        body += ',\n';
+      }
+    }
+
+    body += '\n';
+  }
+
+  return '[' + body + ']';
+}
+
 /**
  * @public
  * @class Arguments
@@ -82,7 +102,7 @@ Type.Arguments = new Type({
   test: _.isArguments,
 
   print: function(val) {
-    return 'Arguments ' + Type.Array.print(val);
+    return 'Arguments ' + printArray(val);
   }
 });
 
@@ -93,26 +113,12 @@ Type.Arguments = new Type({
  * @memberOf Type
  */
 Type.Array = new Type({
-  test: _.isArray,
+  test: function(val) {
+    return _.isArray(val) || _.isTypedArray(val) || _.isArrayBuffer(val);
+  },
 
   print: function(val) {
-    var result = '[';
-
-    if (val.length) {
-      result += '\n';
-
-      for (var i = 0; i < val.length; i++) {
-        result += indentLines(prettyFormat(val[i]));
-
-        if (i < val.length - 1) {
-          result += ',\n';
-        }
-      }
-
-      result += '\n';
-    }
-
-    return result + ']';
+    return val.constructor.name + ' ' + printArray(val);
   }
 });
 
@@ -210,7 +216,6 @@ Type.Infinity = new Type({
   }
 });
 
-
 /**
  * @public
  * @class Map
@@ -218,9 +223,7 @@ Type.Infinity = new Type({
  * @memberOf Type
  */
 Type.Map = new Type({
-  test: function(val) {
-    return Object.prototype.toString.call(val) === '[object Map]';
-  },
+  test: _.isMap,
 
   print: function(val) {
     var result = 'Map {';
@@ -353,9 +356,7 @@ Type.RegExp = new Type({
  * @memberOf Type
  */
 Type.Set = new Type({
-  test: function(val) {
-    return Object.prototype.toString.call(val) === '[object Set]';
-  },
+  test: _.isSet,
 
   print: function(val) {
     var result = 'Set {';
@@ -405,9 +406,7 @@ Type.String = new Type({
  * @memberOf Type
  */
 Type.Symbol = new Type({
-  test: function(val) {
-    return val && val.toString && SYMBOL_REGEXP.test(val.toString());
-  },
+  test: _.isSymbol,
 
   print: function(val) {
     return Symbol.prototype.toString.call(val).replace(SYMBOL_REGEXP, 'Symbol($1)');
@@ -428,12 +427,37 @@ Type.Undefined = new Type({
   }
 });
 
+Type.WeakMap = new Type({
+  test: _.isWeakMap,
+
+  print: function() {
+    return 'WeakMap {}';
+  }
+});
+
+Type.WeakMap = new Type({
+  test: _.isWeakMap,
+
+  print: function() {
+    return 'WeakMap {}';
+  }
+});
+
+Type.WeakSet = new Type({
+  test: _.isWeakSet,
+
+  print: function() {
+    return 'WeakSet {}';
+  }
+});
+
 Type.all = [
   Type.Circular,
 
   Type.Arguments,
   Type.Array,
   Type.Boolean,
+  Type.Date,
   Type.Error,
   Type.Function,
   Type.Infinity,
@@ -446,7 +470,8 @@ Type.all = [
   Type.String,
   Type.Symbol,
   Type.Undefined,
-  Type.Date,
+  Type.WeakMap,
+  Type.WeakSet,
 
   Type.Object
 ];
