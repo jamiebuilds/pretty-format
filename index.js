@@ -1,10 +1,10 @@
-import _ from 'lodash';
+var _ = require('lodash');
 
-const STATE = {};
+var STATE = {};
 
-const NEWLINE_REGEXP = /\n/ig;
+var NEWLINE_REGEXP = /\n/ig;
 
-const SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
+var SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
 
 function indentLines(str) {
   return '  ' + str.replace(NEWLINE_REGEXP, '\n  ');
@@ -35,7 +35,7 @@ function reset() {
 
 reset();
 
-export default function prettyFormat(val) {
+function prettyFormat(val) {
   if (STATE.depth === 0) {
     reset();
   }
@@ -46,7 +46,9 @@ export default function prettyFormat(val) {
 
   var result, error;
   try {
-    result = _.find(Type.all, type => type.test(val)).print(val);
+    result = _.find(Type.all, function(type) {
+      return type.test(val);
+    }).print(val);
   } catch(e) {
     error = e;
   }
@@ -68,6 +70,8 @@ export default function prettyFormat(val) {
 prettyFormat.Type = Type;
 prettyFormat.reset = reset;
 
+module.exports = prettyFormat;
+
 /**
  * @public
  * @class Arguments
@@ -77,7 +81,7 @@ prettyFormat.reset = reset;
 Type.Arguments = new Type({
   test: _.isArguments,
 
-  print(val) {
+  print: function(val) {
     return 'Arguments ' + Type.Array.print(val);
   }
 });
@@ -91,7 +95,7 @@ Type.Arguments = new Type({
 Type.Array = new Type({
   test: _.isArray,
 
-  print(val) {
+  print: function(val) {
     var result = '[';
 
     if (val.length) {
@@ -121,7 +125,7 @@ Type.Array = new Type({
 Type.Boolean = new Type({
   test: _.isBoolean,
 
-  print(val) {
+  print: function(val) {
     return Boolean.prototype.toString.call(val);
   }
 });
@@ -133,7 +137,7 @@ Type.Boolean = new Type({
  * @memberOf Type
  */
 Type.Circular = new Type({
-  test(val) {
+  test: function(val) {
     if (_.isObject(val)) {
       if (_.indexOf(STATE.visitedRefs, val) !== -1) {
         return true;
@@ -143,7 +147,7 @@ Type.Circular = new Type({
     return false;
   },
 
-  print() {
+  print: function() {
     return '[Circular]';
   }
 });
@@ -157,7 +161,7 @@ Type.Circular = new Type({
 Type.Date = new Type({
   test: _.isDate,
 
-  print(val) {
+  print: function(val) {
     return Date.prototype.toISOString.call(val);
   }
 });
@@ -171,7 +175,7 @@ Type.Date = new Type({
 Type.Error = new Type({
   test: _.isError,
 
-  print(val) {
+  print: function(val) {
     return '[' + Error.prototype.toString.call(val) + ']';
   }
 });
@@ -185,7 +189,7 @@ Type.Error = new Type({
 Type.Function = new Type({
   test: _.isFunction,
 
-  print(val) {
+  print: function(val) {
     return Function.prototype.toString.call(val);
   }
 });
@@ -197,11 +201,11 @@ Type.Function = new Type({
  * @memberOf Type
  */
 Type.Infinity = new Type({
-  test(val) {
+  test: function(val) {
     return val === Infinity || val === -Infinity;
   },
 
-  print(val) {
+  print: function(val) {
     return Infinity.toString.call(val);
   }
 });
@@ -214,11 +218,11 @@ Type.Infinity = new Type({
  * @memberOf Type
  */
 Type.Map = new Type({
-  test(val) {
+  test: function(val) {
     return Object.prototype.toString.call(val) === '[object Map]';
   },
 
-  print(val) {
+  print: function(val) {
     var result = 'Map {';
     var iterator = val.entries();
     var current = iterator.next();
@@ -255,7 +259,7 @@ Type.Map = new Type({
 Type.NaN = new Type({
   test: _.isNaN,
 
-  print() {
+  print: function() {
     return 'NaN';
   }
 });
@@ -269,7 +273,7 @@ Type.NaN = new Type({
 Type.Null = new Type({
   test: _.isNull,
 
-  print() {
+  print: function() {
     return 'null';
   }
 });
@@ -283,7 +287,7 @@ Type.Null = new Type({
 Type.Number = new Type({
   test: _.isFinite,
 
-  print(val) {
+  print: function(val) {
     return val === 0 && (1 / val) < 0 ? '-0' : '' + val;
   }
 });
@@ -297,7 +301,7 @@ Type.Number = new Type({
 Type.Object = new Type({
   test: _.isObject,
 
-  print(val) {
+  print: function(val) {
     var result = val.constructor.name + ' {',
         keys = _.keys(val),
         symbols = getSymbols(val);
@@ -337,7 +341,7 @@ Type.Object = new Type({
 Type.RegExp = new Type({
   test: _.isRegExp,
 
-  print(val) {
+  print: function(val) {
     return RegExp.prototype.toString.call(val);
   }
 });
@@ -349,11 +353,11 @@ Type.RegExp = new Type({
  * @memberOf Type
  */
 Type.Set = new Type({
-  test(val) {
+  test: function(val) {
     return Object.prototype.toString.call(val) === '[object Set]';
   },
 
-  print(val) {
+  print: function(val) {
     var result = 'Set {';
     var iterator = val.entries();
     var current = iterator.next();
@@ -389,7 +393,7 @@ Type.Set = new Type({
 Type.String = new Type({
   test: _.isString,
 
-  print(val) {
+  print: function(val) {
     return '"' + val + '"';
   }
 });
@@ -401,11 +405,11 @@ Type.String = new Type({
  * @memberOf Type
  */
 Type.Symbol = new Type({
-  test(val) {
+  test: function(val) {
     return val && val.toString && SYMBOL_REGEXP.test(val.toString());
   },
 
-  print(val) {
+  print: function(val) {
     return Symbol.prototype.toString.call(val).replace(SYMBOL_REGEXP, 'Symbol($1)');
   }
 });
@@ -419,7 +423,7 @@ Type.Symbol = new Type({
 Type.Undefined = new Type({
   test: _.isUndefined,
 
-  print() {
+  print: function() {
     return 'undefined';
   }
 });
