@@ -1,8 +1,11 @@
 # pretty-format [![Travis build status](http://img.shields.io/travis/thejameskyle/pretty-format.svg?style=flat)](https://travis-ci.org/thejameskyle/pretty-format)
 
-Stringify any JavaScript value.
+> Stringify any JavaScript value.
 
-![](http://i.imgur.com/UM7RQza.png)
+Supports objects, arrays (and typed arrays and array buffers), arguments,
+booleans, dates, errors, functions, `Infinity`, maps, `NaN`, `null`, numbers,
+regular expressions, sets, strings, symbols, `undefined`, weak maps, weak
+sets, and circular data structures.
 
 ## Installation
 
@@ -15,19 +18,30 @@ $ npm install pretty-format
 ```js
 var prettyFormat = require('pretty-format');
 
-var obj = { foo: 1 };
-obj.self = obj;
+var obj = { property: {} };
+obj.circularReference = obj;
 obj[Symbol('foo')] = 'foo';
-obj.bar = new Map();
-obj.bar.set('baz', 'bat');
+obj.map = new Map();
+obj.map.set('prop', 'value');
+obj.array = [1, NaN, Infinity];
 
 console.log(prettyFormat(obj));
-// Object {
-//   "foo": 1,
-//   "self": [Circular],
-//   "bar": Map {
-//     "baz" => "bat"
-//   },
-//   Symbol(foo): "foo"
-// }
+```
+
+**Result:**
+
+```js
+Object {
+  "property": Object {},
+  "circularReference": [Circular],
+  "map": Map {
+    "prop" => "value"
+  },
+  "array": Array [
+    1,
+    NaN,
+    Infinity
+  ],
+  Symbol(foo): "foo"
+}
 ```
