@@ -1,27 +1,28 @@
-import _ from 'lodash';
-import {format} from 'util';
-import {Type} from '../../src/pretty-format';
-import print from '../../src/pretty-format';
+var _ = require('lodash');
+var format = require('util').format;
+var Type = require('./').Type;
+var print = require('./');
+var assert = require('assert');
 
 function typeTests(name, Type, config) {
   describe(name, function() {
     describe('#test', function() {
-      _.each(config.test, test => {
+      config.test.forEach(function(test) {
         it('should ' + (test.pass ? '' : 'not ') + 'pass for ' + format(test.value), function() {
-          expect(Type.test(test.value)).to.be[test.pass];
+          assert.equal(Type.test(test.value), test.pass);
         });
       });
     });
 
     describe('#print', function() {
-      _.each(config.print, test => {
+      config.print.forEach(function(test) {
         it('should print ' + test.output + ' correctly', function() {
-          expect(print(test.input)).to.equal(test.output);
+          assert.equal(print(test.input), test.output, print(test.input));
         });
 
         if (test.both !== false) {
           it('should print ' + test.output + ' correctly from the type itself', function() {
-            expect(Type.print(test.input)).to.equal(test.output);
+            assert.equal(Type.print(test.input), test.output);
           });
         }
       });
@@ -41,8 +42,8 @@ describe('Type', function() {
     });
 
     it('should add the test and print methods to the instance', function() {
-      expect(this.type).to.have.property('test', this.testFn);
-      expect(this.type).to.have.property('print', this.print);
+      assert.equal(this.type.test, this.testFn);
+      assert.equal(this.type.print, this.print);
     });
   });
 
@@ -142,7 +143,7 @@ describe('Type', function() {
       ],
       print: [
         { input: new Function(), output: 'function anonymous() {\n\n}' },
-        { input: function() {}, output: 'function input() {}' }
+        { input: function input() {}, output: 'function input() {}' }
       ]
     });
   }());
@@ -243,6 +244,9 @@ describe('Type', function() {
     function Foo() {}
     var foo = new Foo();
 
+    var symbolObj = {};
+    symbolObj[Symbol('foo')] = 'foo';
+
     typeTests('Object', Type.Object, {
       test: [
         { value: {}, pass: true },
@@ -255,7 +259,7 @@ describe('Type', function() {
         { input: foo, output: 'Foo {}' },
         { input: { foo: 'bar', bar: 'baz' }, output: 'Object {\n  "foo": "bar",\n  "bar": "baz"\n}' },
         { input: { foo: { bar: 'baz' } }, output: 'Object {\n  "foo": Object {\n    "bar": "baz"\n  }\n}' },
-        { input: { [Symbol('foo')]: 'foo' }, output: 'Object {\n  Symbol(foo): "foo"\n}' }
+        { input: symbolObj, output: 'Object {\n  Symbol(foo): "foo"\n}' }
       ]
     });
   }());
