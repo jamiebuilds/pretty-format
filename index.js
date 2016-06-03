@@ -107,10 +107,6 @@ function printMap(val, refs, opts, state) {
 }
 
 function printObject(val, refs, opts, state) {
-  if (state.depth > opts.maxDepth) {
-    return '[Object]';
-  }
-
   var result = val.constructor.name + ' {';
   var keys = Object.keys(val);
   var symbols = getSymbols(val);
@@ -191,9 +187,8 @@ function printValue(val, refs, opts, state) {
   if ( isArrayish  (val) ) return stop ? '[Array]'     : printArray     (val, refs, opts, state);
   if ( isMap       (val) ) return stop ? '[Map]'       : printMap       (val, refs, opts, state);
   if ( isSet       (val) ) return stop ? '[Set]'       : printSet       (val, refs, opts, state);
-
   // purposefully last:
-  if ( isObject    (val) ) return printObject    (val, refs, opts, state);
+  if ( isObject    (val) ) return stop ? '[Object]'    : printObject    (val, refs, opts, state);
 }
 
 function print(val, refs, opts, state) {
