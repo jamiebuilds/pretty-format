@@ -1,372 +1,228 @@
-var _ = require('lodash');
-var format = require('util').format;
-var Type = require('./').Type;
-var print = require('./');
 var assert = require('assert');
+var prettyFormat = require('./');
 
-function typeTests(name, Type, config) {
-  describe(name, function() {
-    describe('#test', function() {
-      config.test.forEach(function(test) {
-        it('should ' + (test.pass ? '' : 'not ') + 'pass for ' + format(test.value), function() {
-          assert.equal(Type.test(test.value), test.pass);
-        });
-      });
-    });
-
-    describe('#print', function() {
-      config.print.forEach(function(test) {
-        it('should print ' + test.output + ' correctly', function() {
-          assert.equal(print(test.input), test.output, print(test.input));
-        });
-
-        if (test.both !== false) {
-          it('should print ' + test.output + ' correctly from the type itself', function() {
-            assert.equal(Type.print(test.input), test.output);
-          });
-        }
-      });
-    });
-  });
+function returnArguments() {
+  return arguments;
 }
 
-describe('Type', function() {
-  describe('#constructor', function() {
-    beforeEach(function() {
-      this.testFn = function() {};
-      this.print = function() {};
-      this.type = new Type({
-        test: this.testFn,
-        print: this.print
-      });
-    });
-
-    it('should add the test and print methods to the instance', function() {
-      assert.equal(this.type.test, this.testFn);
-      assert.equal(this.type.print, this.print);
-    });
+describe('prettyFormat()', function() {
+  it('should print empty arguments', function() {
+    var val = returnArguments();
+    assert.equal(prettyFormat(val), 'Arguments []');
   });
 
-  (function() {
-    var args = (function() { return arguments; })(1, 2, 3);
-    var empty = (function() { return arguments; })();
+  it('should print arguments', function() {
+    var val = returnArguments(1, 2, 3);
+    assert.equal(prettyFormat(val), 'Arguments [\n  1,\n  2,\n  3\n]');
+  });
 
-    typeTests('Arguments', Type.Arguments, {
-      test: [
-        { value: args, pass: true },
-        { value: empty, pass: true },
-        { value: [], pass: false },
-        { value: {}, pass: false }
-      ],
-      print: [
-        { input: args, output: 'Arguments [\n  1,\n  2,\n  3\n]' },
-        { input: empty, output: 'Arguments []' }
-      ]
+  it('should print an empty array', function() {
+    var val = [];
+    assert.equal(prettyFormat(val), 'Array []');
+  });
+
+  it('should print an array with items', function() {
+    var val = [1, 2, 3];
+    assert.equal(prettyFormat(val), 'Array [\n  1,\n  2,\n  3\n]');
+  });
+
+  it('should print a typed array', function() {
+    var val = new Uint32Array(3);
+    assert.equal(prettyFormat(val), 'Uint32Array [\n  0,\n  0,\n  0\n]');
+  });
+
+  it('should print an array buffer', function() {
+    var val = new ArrayBuffer(3);
+    assert.equal(prettyFormat(val), 'ArrayBuffer []');
+  });
+
+  it('should print a nested array', function() {
+    var val = [[1, 2, 3]];
+    assert.equal(prettyFormat(val), 'Array [\n  Array [\n    1,\n    2,\n    3\n  ]\n]');
+  });
+
+  it('should print true', function() {
+    var val = true;
+    assert.equal(prettyFormat(val), 'true');
+  });
+
+  it('should print false', function() {
+    var val = false;
+    assert.equal(prettyFormat(val), 'false');
+  });
+
+  it('should print an error', function() {
+    var val = new Error();
+    assert.equal(prettyFormat(val), '[Error]');
+  });
+
+  it('should print a typed error with a message', function() {
+    var val = new TypeError('message');
+    assert.equal(prettyFormat(val), '[TypeError: message]');
+  });
+
+  it('should print a function constructor', function() {
+    var val = new Function();
+    assert.equal(prettyFormat(val), 'function anonymous() {\n\n}');
+  });
+
+  it('should print an anonymous function', function() {
+    var val = function() {};
+    assert.equal(prettyFormat(val), 'function () {}');
+  });
+
+  it('should print a named function', function() {
+    var val = function named() {};
+    assert.equal(prettyFormat(val), 'function named() {}');
+  });
+
+  it('should print Infinity', function() {
+    var val = Infinity;
+    assert.equal(prettyFormat(val), 'Infinity');
+  });
+
+  it('should print -Infinity', function() {
+    var val = -Infinity;
+    assert.equal(prettyFormat(val), '-Infinity');
+  });
+
+  it('should print an empty map', function() {
+    var val = new Map();
+    assert.equal(prettyFormat(val), 'Map {}');
+  });
+
+  it('should print a map with values', function() {
+    var val = new Map();
+    val.set('prop1', 'value1');
+    val.set('prop2', 'value2');
+    assert.equal(prettyFormat(val), 'Map {\n  "prop1" => "value1",\n  "prop2" => "value2"\n}');
+  });
+
+  it('should print a map with non-string keys', function() {
+    var val = new Map();
+    val.set({ prop: 'value' }, { prop: 'value' });
+    assert.equal(prettyFormat(val), 'Map {\n  Object {\n    "prop": "value"\n  } => Object {\n    "prop": "value"\n  }\n}');
+  });
+
+  it('should print NaN', function() {
+    var val = NaN;
+    assert.equal(prettyFormat(val), 'NaN');
+  });
+
+  it('should print null', function() {
+    var val = null;
+    assert.equal(prettyFormat(val), 'null');
+  });
+
+  it('should print a number', function() {
+    var val = 123;
+    assert.equal(prettyFormat(val), '123');
+  });
+
+  it('should print a date', function() {
+    var val = new Date(10e11);
+    assert.equal(prettyFormat(val), '2001-09-09T01:46:40.000Z');
+  });
+
+  it('should print an empty object', function() {
+    var val = {};
+    assert.equal(prettyFormat(val), 'Object {}');
+  });
+
+  it('should print an object with properties', function() {
+    var val = { prop1: 'value1', prop2: 'value2' };
+    assert.equal(prettyFormat(val), 'Object {\n  "prop1": "value1",\n  "prop2": "value2"\n}');
+  });
+
+  it('should print an object with properties and symbols', function() {
+    var val = { prop: 'value1' };
+    val[Symbol('symbol1')] = 'value2';
+    val[Symbol('symbol2')] = 'value3';
+    assert.equal(prettyFormat(val), 'Object {\n  "prop": "value1",\n  Symbol(symbol1): "value2",\n  Symbol(symbol2): "value3"\n}');
+  });
+
+  it('should print regular expressions from constructors', function() {
+    var val = new RegExp('regexp');
+    assert.equal(prettyFormat(val), '/regexp/');
+  });
+
+  it('should print regular expressions from literals', function() {
+    var val = /regexp/ig;
+    assert.equal(prettyFormat(val), '/regexp/gi');
+  });
+
+  it('should print an empty set', function() {
+    var val = new Set();
+    assert.equal(prettyFormat(val), 'Set {}');
+  });
+
+  it('should print a set with values', function() {
+    var val = new Set();
+    val.add('value1');
+    val.add('value2');
+    assert.equal(prettyFormat(val), 'Set {\n  "value1",\n  "value2"\n}');
+  });
+
+  it('should print a string', function() {
+    var val = 'string';
+    assert.equal(prettyFormat(val), '"string"');
+  });
+
+  it('should print a symbol', function() {
+    var val = Symbol('symbol');
+    assert.equal(prettyFormat(val), 'Symbol(symbol)');
+  });
+
+  it('should print undefined', function() {
+    var val = undefined;
+    assert.equal(prettyFormat(val), 'undefined');
+  });
+
+  it('should print undefined', function() {
+    var val = undefined;
+    assert.equal(prettyFormat(val), 'undefined');
+  });
+
+  it('should print a WeakMap', function() {
+    var val = new WeakMap();
+    assert.equal(prettyFormat(val), 'WeakMap {}');
+  });
+
+  it('should print a WeakSet', function() {
+    var val = new WeakSet();
+    assert.equal(prettyFormat(val), 'WeakSet {}');
+  });
+
+  it('should print deeply nested objects', function() {
+    var val = { prop: { prop: { prop: 'value' } } };
+    assert.equal(prettyFormat(val), 'Object {\n  "prop": Object {\n    "prop": Object {\n      "prop": "value"\n    }\n  }\n}');
+  });
+
+  it('should print circular references', function() {
+    var val = {};
+    val.prop = val;
+    assert.equal(prettyFormat(val), 'Object {\n  "prop": [Circular]\n}')
+  });
+
+  it('should print parallel references', function() {
+    var inner = {};
+    var val = { prop1: inner, prop2: inner };
+    assert.equal(prettyFormat(val), 'Object {\n  "prop1": Object {},\n  "prop2": Object {}\n}')
+  });
+
+  it('should be able to customize indent', function() {
+    var val = { prop: 'value' };
+    assert.equal(prettyFormat(val, { indent: 4 }), 'Object {\n    "prop": "value"\n}');
+  });
+
+  it('should be able to customize the max depth', function() {
+    var val = { prop: { prop: { prop: {} } } };
+    assert.equal(prettyFormat(val, { maxDepth: 2 }), 'Object {\n  "prop": Object {\n    "prop": [Object]\n  }\n}');
+  });
+
+  it('should throw on invalid options', function() {
+    assert.throws(function() {
+      prettyFormat({}, { invalidOption: true });
     });
-  }());
-
-  (function() {
-    typeTests('Array', Type.Array, {
-      test: [
-        { value: [], pass: true },
-        { value: new Uint32Array(2), pass: true },
-        { value: new ArrayBuffer(2), pass: true },
-        { value: {}, pass: false },
-        { value: 'foo', pass: false }
-      ],
-      print: [
-        { input: [], output: 'Array []' },
-        { input: [1], output: 'Array [\n  1\n]' },
-        { input: new Uint32Array(2), output: 'Uint32Array [\n  0,\n  0\n]' },
-        { input: new ArrayBuffer(2), output: 'ArrayBuffer []' },
-        { input: [[1, 2]], output: 'Array [\n  Array [\n    1,\n    2\n  ]\n]' }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('Boolean', Type.Boolean, {
-      test: [
-        { value: true, pass: true },
-        { value: false, pass: true },
-        { value: null, pass: false },
-        { value: {}, pass: false }
-      ],
-      print: [
-        { input: true, output: 'true' },
-        { input: false, output: 'false' }
-      ]
-    });
-  }());
-
-  (function() {
-    var obj = {};
-    var arr = [];
-
-    obj.obj = obj;
-    arr[0] = arr;
-
-    typeTests('Circular', Type.Circular, {
-      test: [
-        { value: obj, pass: false },
-        { value: obj, pass: true },
-        { value: arr, pass: false },
-        { value: arr, pass: true },
-        { value: { obj: {} }, pass: false },
-        { value: { a: 1, b: 1 }, pass: false }
-      ],
-      print: [
-        { input: obj, output: 'Object {\n  "obj": [Circular]\n}', both: false },
-        { input: arr, output: 'Array [\n  [Circular]\n]', both: false }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('Error', Type.Error, {
-      test: [
-        { value: new Error(), pass: true },
-        { value: new TypeError('bar'), pass: true },
-        { value: false, pass: false },
-        { value: {}, pass: false }
-      ],
-      print: [
-        { input: new Error(), output: '[Error]' },
-        { input: new TypeError('bar'), output: '[TypeError: bar]' }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('Function', Type.Function, {
-      test: [
-        { value: new Function(), pass: true },
-        { value: function() {}, pass: true },
-        { value: false, pass: false },
-        { value: {}, pass: false }
-      ],
-      print: [
-        { input: new Function(), output: 'function anonymous() {\n\n}' },
-        { input: function input() {}, output: 'function input() {}' }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('Infinity', Type.Infinity, {
-      test: [
-        { value: Infinity, pass: true },
-        { value: -Infinity, pass: true },
-        { value: 2, pass: false },
-        { value: NaN, pass: false }
-      ],
-      print: [
-        { input: Infinity, output: 'Infinity' },
-        { input: -Infinity, output: '-Infinity' }
-      ]
-    });
-  }());
-
-  (function() {
-    var map1 = new Map();
-    var map2 = new Map();
-    map2.set('foo', 'bar');
-    map2.set('bar', 'baz');
-
-    typeTests('Map', Type.Map, {
-      test: [
-        { value: map1, pass: true },
-        { value: map2, pass: true },
-        { value: new WeakMap(), pass: false },
-        { value: false, pass: false },
-        { value: {}, pass: false }
-      ],
-      print: [
-        { input: map1, output: 'Map {}' },
-        { input: map2, output: 'Map {\n  "foo" => "bar",\n  "bar" => "baz"\n}' }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('NaN', Type.NaN, {
-      test: [
-        { value: NaN, pass: true },
-        { value: 2, pass: false },
-        { value: false, pass: false }
-      ],
-      print: [
-        { input: NaN, output: 'NaN' }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('Null', Type.Null, {
-      test: [
-        { value: null, pass: true },
-        { value: undefined, pass: false },
-        { value: false, pass: false }
-      ],
-      print: [
-        { input: null, output: 'null' }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('Number', Type.Number, {
-      test: [
-        { value: 2, pass: true },
-        { value: NaN, pass: false },
-        { value: false, pass: false }
-      ],
-      print: [
-        { input: 2, output: '2' },
-        { input: 0, output: '0' },
-        { input: -0, output: '-0' },
-        { input: Infinity, output: 'Infinity' },
-        { input: -Infinity, output: '-Infinity' }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('Date', Type.Date, {
-      test: [
-        { value: new Date(10e11), pass: true },
-        { value: NaN, pass: false },
-        { value: false, pass: false }
-      ],
-      print: [
-        { input: new Date(10e11), output: '2001-09-09T01:46:40.000Z' },
-        { input: new Date(new Date(20e11)), output: '2033-05-18T03:33:20.000Z' }
-      ]
-    });
-  }());
-
-  (function() {
-    function Foo() {}
-    var foo = new Foo();
-
-    var symbolObj = {};
-    symbolObj[Symbol('foo')] = 'foo';
-
-    typeTests('Object', Type.Object, {
-      test: [
-        { value: {}, pass: true },
-        { value: foo, pass: true },
-        { value: new Map(), pass: true },
-        { value: [], pass: true }
-      ],
-      print: [
-        { input: {}, output: 'Object {}' },
-        { input: foo, output: 'Foo {}' },
-        { input: { foo: 'bar', bar: 'baz' }, output: 'Object {\n  "foo": "bar",\n  "bar": "baz"\n}' },
-        { input: { foo: { bar: 'baz' } }, output: 'Object {\n  "foo": Object {\n    "bar": "baz"\n  }\n}' },
-        { input: symbolObj, output: 'Object {\n  Symbol(foo): "foo"\n}' }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('RegExp', Type.RegExp, {
-      test: [
-        { value: new RegExp('foo'), pass: true },
-        { value: /bar/ig, pass: true },
-        { value: {}, pass: false }
-      ],
-      print: [
-        { input: new RegExp('foo'), output: '/foo/' },
-        { input: /bar/ig, output: '/bar/gi' }
-      ]
-    });
-  }());
-
-  (function() {
-    var set1 = new Set();
-    var set2 = new Set();
-    set2.add('foo');
-    set2.add('bar');
-
-    typeTests('Set', Type.Set, {
-      test: [
-        { value: set1, pass: true },
-        { value: set2, pass: true },
-        { value: new WeakSet(), pass: false },
-        { value: false, pass: false },
-        { value: {}, pass: false }
-      ],
-      print: [
-        { input: set1, output: 'Set {}' },
-        { input: set2, output: 'Set {\n  "foo",\n  "bar"\n}' }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('String', Type.String, {
-      test: [
-        { value: String('foo'), pass: true },
-        { value: 'bar', pass: true },
-        { value: {}, pass: false }
-      ],
-      print: [
-        { input: String('foo'), output: '"foo"' },
-        { input: 'bar', output: '"bar"' }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('Symbol', Type.Symbol, {
-      test: [
-        { value: Symbol('foo'), pass: true },
-        { value: 'bar', pass: false },
-        { value: {}, pass: false }
-      ],
-      print: [
-        { input: Symbol('foo'), output: 'Symbol(foo)' }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('Undefined', Type.Undefined, {
-      test: [
-        { value: undefined, pass: true },
-        { value: null, pass: false },
-        { value: {}, pass: false }
-      ],
-      print: [
-        { input: undefined, output: 'undefined' }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('WeakMap', Type.WeakMap, {
-      test: [
-        { value: new WeakMap(), pass: true },
-        { value: new Map(), pass: false },
-        { value: {}, pass: false }
-      ],
-      print: [
-        { input: new WeakMap(), output: 'WeakMap {}' }
-      ]
-    });
-  }());
-
-  (function() {
-    typeTests('WeakSet', Type.WeakSet, {
-      test: [
-        { value: new WeakSet(), pass: true },
-        { value: new Set(), pass: false },
-        { value: {}, pass: false }
-      ],
-      print: [
-        { input: new WeakSet(), output: 'WeakSet {}' }
-      ]
-    });
-  }());
+  });
 });
