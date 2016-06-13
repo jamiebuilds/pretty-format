@@ -1,13 +1,41 @@
-var _ = require('lodash');
-
-var STATE = {};
+var isArguments    = require('lodash/isArguments');
+var isArray        = require('lodash/isArray');
+var isArrayBuffer  = require('lodash/isArrayBuffer');
+var isBoolean      = require('lodash/isBoolean');
+var isDate         = require('lodash/isDate');
+var isError        = require('lodash/isError');
+var isFinite       = require('lodash/isFinite');
+var isFunction     = require('lodash/isFunction');
+var isMap          = require('lodash/isMap');
+var isNaN          = require('lodash/isNaN');
+var isNull         = require('lodash/isNull');
+var isObject       = require('lodash/isObject');
+var isRegExp       = require('lodash/isRegExp');
+var isSet          = require('lodash/isSet');
+var isString       = require('lodash/isString');
+var isSymbol       = require('lodash/isSymbol');
+var isTypedArray   = require('lodash/isTypedArray');
+var isUndefined    = require('lodash/isUndefined');
+var isWeakMap      = require('lodash/isWeakMap');
+var isWeakSet      = require('lodash/isWeakSet');
 
 var NEWLINE_REGEXP = /\n/ig;
-
 var SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
 
-function indentLines(str) {
-  return '  ' + str.replace(NEWLINE_REGEXP, '\n  ');
+function isArrayish(val) {
+  return isArray(val) || isTypedArray(val) || isArrayBuffer(val);
+}
+
+function isNumber(val) {
+  return isFinite(val);
+}
+
+function isInfinity(val) {
+  return val === Infinity || val === -Infinity;
+}
+
+function isNegativeZero(val) {
+  return val === 0 && (1 / val) < 0;
 }
 
 function getSymbols(obj) {
@@ -18,70 +46,21 @@ function getSymbols(obj) {
   }
 }
 
-/**
- * @public
- * @class Type
- */
-function Type(options) {
-  this.test = options.test;
-  this.print = options.print;
+function indent(str, opts) {
+  var indentation = new Array(opts.indent + 1).join(' ');
+  return indentation + str.replace(NEWLINE_REGEXP, '\n' + indentation);
 }
 
-function reset() {
-  STATE.visitedRefs = [];
-  STATE.prevVisitedRefs = null;
-  STATE.depth = 0;
-}
-
-reset();
-
-function prettyFormat(val) {
-  if (STATE.depth === 0) {
-    reset();
-  }
-
-  STATE.prevVisitedRefs = STATE.visitedRefs;
-  STATE.visitedRefs = [].concat(STATE.visitedRefs);
-  STATE.depth++;
-
-  var result, error;
-  try {
-    result = _.find(Type.all, function(type) {
-      return type.test(val);
-    }).print(val);
-  } catch(e) {
-    error = e;
-  }
-
-  STATE.depth--;
-  STATE.visitedRefs = STATE.prevVisitedRefs;
-
-  if (STATE.depth === 0) {
-    reset();
-  }
-
-  if (error) {
-    throw error;
-  } else {
-    return result;
-  }
-}
-
-prettyFormat.Type = Type;
-prettyFormat.reset = reset;
-
-module.exports = prettyFormat;
-
-function printArray(array) {
+function printList(list, refs, opts, state) {
   var body = '';
 
-  if (array.length) {
+  if (list.length) {
     body += '\n';
 
-    for (var i = 0; i < array.length; i++) {
-      body += indentLines(prettyFormat(array[i]));
+    for (var i = 0; i < list.length; i++) {
+      body += indent(print(list[i], refs, opts, state), opts);
 
-      if (i < array.length - 1) {
+      if (i < list.length - 1) {
         body += ',\n';
       }
     }
@@ -92,386 +71,170 @@ function printArray(array) {
   return '[' + body + ']';
 }
 
-/**
- * @public
- * @class Arguments
- * @extends Type
- * @memberOf Type
- */
-Type.Arguments = new Type({
-  test: _.isArguments,
+function printArray(val, refs, opts, state) {
+  return val.constructor.name + ' ' + printList(val, refs, opts, state);
+}
 
-  print: function(val) {
-    return 'Arguments ' + printArray(val);
-  }
-});
+function printArguments(val, refs, opts, state) {
+  return 'Arguments ' + printList(val, refs, opts, state);
+}
 
-/**
- * @public
- * @class Array
- * @extends Type
- * @memberOf Type
- */
-Type.Array = new Type({
-  test: function(val) {
-    return _.isArray(val) || _.isTypedArray(val) || _.isArrayBuffer(val);
-  },
+function printMap(val, refs, opts, state) {
+  var result = 'Map {';
+  var iterator = val.entries();
+  var current = iterator.next();
 
-  print: function(val) {
-    return val.constructor.name + ' ' + printArray(val);
-  }
-});
+  if (!current.done) {
+    result += '\n';
 
-/**
- * @public
- * @class Boolean
- * @extends Type
- * @memberOf Type
- */
-Type.Boolean = new Type({
-  test: _.isBoolean,
+    while (!current.done) {
+      var key = print(current.value[0], refs, opts, state);
+      var value = print(current.value[1], refs, opts, state);
 
-  print: function(val) {
-    return Boolean.prototype.toString.call(val);
-  }
-});
+      result += indent(key + ' => ' + value, opts);
 
-/**
- * @public
- * @class Circular
- * @extends Type
- * @memberOf Type
- */
-Type.Circular = new Type({
-  test: function(val) {
-    if (_.isObject(val)) {
-      if (_.indexOf(STATE.visitedRefs, val) !== -1) {
-        return true;
+      current = iterator.next();
+
+      if (!current.done) {
+        result += ',\n';
       }
-      STATE.visitedRefs.push(val);
     }
-    return false;
-  },
 
-  print: function() {
+    result += '\n';
+  }
+
+  return result + '}';
+}
+
+function printObject(val, refs, opts, state) {
+  var result = val.constructor.name + ' {';
+  var keys = Object.keys(val);
+  var symbols = getSymbols(val);
+
+  if (symbols.length) {
+    keys = keys.filter(function(key) {
+      return !isSymbol(key);
+    }).concat(symbols);
+  }
+
+  if (keys.length) {
+    result += '\n';
+
+    for (var i = 0; i < keys.length; i++) {
+      var key = keys[i];
+      var name = print(key, refs, opts, state);
+      var value = print(val[key], refs, opts, state);
+
+      result += indent(name + ': ' + value, opts);
+
+      if (i < keys.length - 1) {
+        result += ',\n';
+      }
+    }
+
+    result += '\n';
+  }
+
+  return result + '}';
+}
+
+function printSet(val, refs, opts, state) {
+  var result = 'Set {';
+  var iterator = val.entries();
+  var current = iterator.next();
+
+  if (!current.done) {
+    result += '\n';
+
+    while (!current.done) {
+      var value = print(current.value[1], refs, opts, state);
+
+      result += indent(value, opts);
+
+      current = iterator.next();
+
+      if (!current.done) {
+        result += ',\n';
+      }
+    }
+
+    result += '\n';
+  }
+
+  return result + '}';
+}
+
+function printValue(val, refs, opts, state) {
+  // Simple values
+  if ( isBoolean   (val) ) return Boolean.prototype.toString.call(val);
+  if ( isDate      (val) ) return Date.prototype.toISOString.call(val);
+  if ( isError     (val) ) return '[' + Error.prototype.toString.call(val) + ']';
+  if ( isFunction  (val) ) return Function.prototype.toString.call(val);
+  if ( isInfinity  (val) ) return Infinity.toString.call(val);
+  if ( isNaN       (val) ) return 'NaN';
+  if ( isNull      (val) ) return 'null';
+  if ( isNumber    (val) ) return isNegativeZero(val) ? '-0' : '' + val;
+  if ( isRegExp    (val) ) return RegExp.prototype.toString.call(val)
+  if ( isString    (val) ) return '"' + val + '"';
+  if ( isSymbol    (val) ) return Symbol.prototype.toString.call(val).replace(SYMBOL_REGEXP, 'Symbol($1)');
+  if ( isUndefined (val) ) return 'undefined';
+  if ( isWeakMap   (val) ) return 'WeakMap {}';
+  if ( isWeakSet   (val) ) return 'WeakSet {}';
+
+  var stop = opts.maxDepth < state.depth;
+
+  if ( isArguments (val) ) return stop ? '[Arguments]' : printArguments (val, refs, opts, state);
+  if ( isArrayish  (val) ) return stop ? '[Array]'     : printArray     (val, refs, opts, state);
+  if ( isMap       (val) ) return stop ? '[Map]'       : printMap       (val, refs, opts, state);
+  if ( isSet       (val) ) return stop ? '[Set]'       : printSet       (val, refs, opts, state);
+  // purposefully last:
+  if ( isObject    (val) ) return stop ? '[Object]'    : printObject    (val, refs, opts, state);
+}
+
+function print(val, refs, opts, state) {
+  refs = refs.slice(); // clone
+
+  if (refs.indexOf(val) !== -1) {
     return '[Circular]';
+  } else {
+    refs.push(val);
   }
-});
 
-/**
- * @public
- * @class Date
- * @extends Type
- * @memberOf Type
- */
-Type.Date = new Type({
-  test: _.isDate,
+  state.depth++;
+  var result = printValue(val, refs, opts, state);
+  state.depth--;
+  return result;
+}
 
-  print: function(val) {
-    return Date.prototype.toISOString.call(val);
-  }
-});
+var DEFAULTS = {
+  indent: 2,
+  maxDepth: Infinity
+};
 
-/**
- * @public
- * @class Error
- * @extends Type
- * @memberOf Type
- */
-Type.Error = new Type({
-  test: _.isError,
-
-  print: function(val) {
-    return '[' + Error.prototype.toString.call(val) + ']';
-  }
-});
-
-/**
- * @public
- * @class Function
- * @extends Type
- * @memberOf Type
- */
-Type.Function = new Type({
-  test: _.isFunction,
-
-  print: function(val) {
-    return Function.prototype.toString.call(val);
-  }
-});
-
-/**
- * @public
- * @class Infinity
- * @extends Type
- * @memberOf Type
- */
-Type.Infinity = new Type({
-  test: function(val) {
-    return val === Infinity || val === -Infinity;
-  },
-
-  print: function(val) {
-    return Infinity.toString.call(val);
-  }
-});
-
-/**
- * @public
- * @class Map
- * @extends Type
- * @memberOf Type
- */
-Type.Map = new Type({
-  test: _.isMap,
-
-  print: function(val) {
-    var result = 'Map {';
-    var iterator = val.entries();
-    var current = iterator.next();
-
-    if (!current.done) {
-      result += '\n';
-
-      while (!current.done) {
-        var key = prettyFormat(current.value[0]);
-        var value = prettyFormat(current.value[1]);
-
-        result += indentLines(key + ' => ' + value);
-
-        current = iterator.next();
-
-        if (!current.done) {
-          result += ',\n';
-        }
-      }
-
-      result += '\n';
+function validateOptions(opts) {
+  Object.keys(opts).forEach(function(key) {
+    if (!DEFAULTS.hasOwnProperty(key)) {
+      throw new Error('prettyFormat: Invalid option: ' + key);
     }
+  });
+}
 
-    return result + '}';
-  }
-});
+function normalizeOptions(opts) {
+  var result = {};
 
-/**
- * @public
- * @class NaN
- * @extends Type
- * @memberOf Type
- */
-Type.NaN = new Type({
-  test: _.isNaN,
+  Object.keys(DEFAULTS).forEach(function(key) {
+    result[key] = opts.hasOwnProperty(key) ? opts[key] : DEFAULTS[key];
+  });
 
-  print: function() {
-    return 'NaN';
-  }
-});
+  return result;
+}
 
-/**
- * @public
- * @class Null
- * @extends Type
- * @memberOf Type
- */
-Type.Null = new Type({
-  test: _.isNull,
+module.exports = function prettyFormat(val, opts) {
+  opts = opts || {};
+  validateOptions(opts)
+  opts = normalizeOptions(opts)
 
-  print: function() {
-    return 'null';
-  }
-});
-
-/**
- * @public
- * @class Number
- * @extends Type
- * @memberOf Type
- */
-Type.Number = new Type({
-  test: _.isFinite,
-
-  print: function(val) {
-    return val === 0 && (1 / val) < 0 ? '-0' : '' + val;
-  }
-});
-
-/**
- * @public
- * @class Object
- * @extends Type
- * @memberOf Type
- */
-Type.Object = new Type({
-  test: _.isObject,
-
-  print: function(val) {
-    var result = val.constructor.name + ' {',
-        keys = _.keys(val),
-        symbols = getSymbols(val);
-
-    if (symbols.length) {
-      keys = _.reject(keys, _.bindKey(SYMBOL_REGEXP, 'test')).concat(symbols);
-    }
-
-    if (keys.length) {
-      result += '\n';
-
-      for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        var name = prettyFormat(key);
-        var value = prettyFormat(val[key]);
-
-        result += indentLines(name + ': ' + value);
-
-        if (i < keys.length - 1) {
-          result += ',\n';
-        }
-      }
-
-      result += '\n';
-    }
-
-    return result + '}';
-  }
-});
-
-/**
- * @public
- * @class RegExp
- * @extends Type
- * @memberOf Type
- */
-Type.RegExp = new Type({
-  test: _.isRegExp,
-
-  print: function(val) {
-    return RegExp.prototype.toString.call(val);
-  }
-});
-
-/**
- * @public
- * @class Set
- * @extends Type
- * @memberOf Type
- */
-Type.Set = new Type({
-  test: _.isSet,
-
-  print: function(val) {
-    var result = 'Set {';
-    var iterator = val.entries();
-    var current = iterator.next();
-
-    if (!current.done) {
-      result += '\n';
-
-      while (!current.done) {
-        var value = prettyFormat(current.value[1]);
-
-        result += indentLines(value);
-
-        current = iterator.next();
-
-        if (!current.done) {
-          result += ',\n';
-        }
-      }
-
-      result += '\n';
-    }
-
-    return result + '}';
-  }
-});
-
-/**
- * @public
- * @class String
- * @extends Type
- * @memberOf Type
- */
-Type.String = new Type({
-  test: _.isString,
-
-  print: function(val) {
-    return '"' + val + '"';
-  }
-});
-
-/**
- * @public
- * @class Symbol
- * @extends Type
- * @memberOf Type
- */
-Type.Symbol = new Type({
-  test: _.isSymbol,
-
-  print: function(val) {
-    return Symbol.prototype.toString.call(val).replace(SYMBOL_REGEXP, 'Symbol($1)');
-  }
-});
-
-/**
- * @public
- * @class Undefined
- * @extends Type
- * @memberOf Type
- */
-Type.Undefined = new Type({
-  test: _.isUndefined,
-
-  print: function() {
-    return 'undefined';
-  }
-});
-
-Type.WeakMap = new Type({
-  test: _.isWeakMap,
-
-  print: function() {
-    return 'WeakMap {}';
-  }
-});
-
-Type.WeakMap = new Type({
-  test: _.isWeakMap,
-
-  print: function() {
-    return 'WeakMap {}';
-  }
-});
-
-Type.WeakSet = new Type({
-  test: _.isWeakSet,
-
-  print: function() {
-    return 'WeakSet {}';
-  }
-});
-
-Type.all = [
-  Type.Circular,
-
-  Type.Arguments,
-  Type.Array,
-  Type.Boolean,
-  Type.Date,
-  Type.Error,
-  Type.Function,
-  Type.Infinity,
-  Type.Map,
-  Type.NaN,
-  Type.Null,
-  Type.Number,
-  Type.RegExp,
-  Type.Set,
-  Type.String,
-  Type.Symbol,
-  Type.Undefined,
-  Type.WeakMap,
-  Type.WeakSet,
-
-  Type.Object
-];
+  return print(val, [], opts, {
+    depth: 0
+  });
+};
