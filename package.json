@@ -1,6 +1,6 @@
 {
   "name": "pretty-format",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Stringify any JavaScript value.",
   "license": "MIT",
   "main": "index.js",
