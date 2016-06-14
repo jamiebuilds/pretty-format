@@ -81,16 +81,6 @@ function printArray(val, refs, opts, state) {
   return val.constructor.name + ' ' + printList(val, refs, opts, state);
 }
 
-function printPlugin(val, refs, opts, state) {
-
-  var plugin = opts.plugins.find(function(plugin){
-    return plugin.test(val);
-  });
-  const boundPrint = val => print(val, refs, opts, state);
-  const boundIndent = val => indent(val, opts);
-  return plugin.print(val, boundPrint, boundIndent);
-}
-
 function printArguments(val, refs, opts, state) {
   return 'Arguments ' + printList(val, refs, opts, state);
 }
@@ -180,8 +170,29 @@ function printSet(val, refs, opts, state) {
   return result + '}';
 }
 
+function printWithPlugin(plugin, val, refs, opts, state) {
+  function boundPrint(val) {
+    return print(val, refs, opts, state);
+  }
+
+  function boundIndent(val) {
+    return indent(val, opts);
+  }
+
+  return plugin.print(val, boundPrint, boundIndent);
+}
+
 function printValue(val, refs, opts, state) {
-  if ( isPlugin    (val, opts) ) return printPlugin(val, refs, opts, state);
+  var plugins = opts.plugins;
+
+  for (var p = 0; p < plugins.length; p++) {
+    var plugin = plugins[p];
+
+    if (plugin.test(val)) {
+      return printWithPlugin(plugin, val, refs, opts, state);
+    }
+  }
+
   // Simple values
   if ( isBoolean   (val) ) return Boolean.prototype.toString.call(val);
   if ( isDate      (val) ) return Date.prototype.toISOString.call(val);

@@ -227,20 +227,17 @@ describe('prettyFormat()', function() {
   });
 
   it('should support plugins', function() {
-    'use strict';
     function Foo() {};
 
     assert.equal(prettyFormat(new Foo(), {
-      plugins: [
-        {
-          test(object) {
-            return object.constructor.name === 'Foo';
-          },
-          print() {
-            return 'class Foo'
-          }
+      plugins: [{
+        test: function(object) {
+          return object.constructor.name === 'Foo';
+        },
+        print: function() {
+          return 'class Foo'
         }
-      ]
+      }]
     }), 'class Foo');
   })
 });
