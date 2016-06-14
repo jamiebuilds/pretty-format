@@ -1,4 +1,5 @@
 var prettyFormat = require('./index');
+var isString = require('lodash/isString');
 
 var reactTestInstance = Symbol.for('react-test-instance');
 var inJSX = Symbol('inJSX');
@@ -14,45 +15,53 @@ var exampleJSX = {
   }]
 };
 
+function printElement(val, print, indent) {
+  var result = '<' + val.type;
+
+  if (val.props) {
+    Object.keys(val.props).forEach(function(name) {
+      var prop = val.props[name];
+      var printed = print(prop);
+
+      result += ' ' + name + '=';
+
+      if (isString(prop)) {
+        result += printed;
+      } else {
+        result += '{' + printed + '}';
+      }
+    });
+  }
+
+  if (val.children) {
+    result += '>\n';
+
+    result += val.children.map(function(child) {
+      var printed;
+
+      if (isString(child)) {
+        printed = print(child);
+      } else {
+        printed = printElement(child, print, indent);
+      }
+
+      return indent(printed);
+    }).join('\n');
+
+    result += '\n</' + val.type + '>';
+  } else {
+    result += '/>';
+  }
+
+  return result;
+}
+
 var jsxPlugin = {
   test: function(val, state) {
-    return state[inJSX] && val && val.type || val.$$typeof === reactTestInstance;
+    return val.$$typeof === reactTestInstance;
   },
-  print: function(val, print, indent, state) {
-    var result = '';
-    state[inJSX] = true;
-
-    result += '<' + val.type;
-
-    if (val.props) {
-      Object.keys(val.props).forEach(function(name) {
-        var prop = val.props[name];
-        var printed = print(prop);
-
-        result += ' ' + name + '=';
-
-        if (typeof prop === 'string') {
-          result += printed;
-        } else {
-          result += '{' + printed + '}';
-        }
-      });
-    }
-
-    if (val.children) {
-      result += '>\n';
-
-      result += val.children.map(function(child) {
-        return indent(print(child));
-      }).join('\n');
-
-      result += '\n</' + val.type + '>';
-    } else {
-      result += '/>';
-    }
-
-    state[inJSX] = false;
-    return result;
+  print: function(val, print, indent) {
+    return printElement(val, print, indent);
   }
 };
 

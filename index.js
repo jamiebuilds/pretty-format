@@ -173,7 +173,7 @@ function printWithPlugin(plugin, val, refs, opts, state) {
     return indent(val, opts);
   }
 
-  return plugin.print(val, boundPrint, boundIndent, state);
+  return plugin.print(val, boundPrint, boundIndent);
 }
 
 function printValue(val, refs, opts, state) {
@@ -182,7 +182,7 @@ function printValue(val, refs, opts, state) {
   for (var p = 0; p < plugins.length; p++) {
     var plugin = plugins[p];
 
-    if (plugin.test(val, state)) {
+    if (plugin.test(val)) {
       return printWithPlugin(plugin, val, refs, opts, state);
     }
   }
