@@ -2,7 +2,6 @@ var prettyFormat = require('./index');
 var isString = require('lodash/isString');
 
 var reactTestInstance = Symbol.for('react-test-instance');
-var inJSX = Symbol('inJSX');
 
 var exampleJSX = {
   $$typeof: reactTestInstance,
