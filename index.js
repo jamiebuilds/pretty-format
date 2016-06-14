@@ -38,12 +38,6 @@ function isNegativeZero(val) {
   return val === 0 && (1 / val) < 0;
 }
 
-function isPlugin(val, opts) {
-  return opts.plugins.some(function(plugin){
-    return plugin.test(val);
-  });
-}
-
 function getSymbols(obj) {
   if (typeof Object.getOwnPropertySymbols === 'function') {
     return Object.getOwnPropertySymbols(obj);
