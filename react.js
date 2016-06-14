@@ -7,11 +7,15 @@ var inJSX = Symbol('inJSX');
 var exampleJSX = {
   $$typeof: reactTestInstance,
   type: 'div',
-  props: null,
+  props: {
+    style: {
+      display: 'none'
+    }
+  },
   children: [{
     type: 'a',
     props: { role: 'link' },
-    children: null
+    children: ["What"]
   }]
 };
 
@@ -40,7 +44,7 @@ function printElement(val, print, indent) {
       var printed;
 
       if (isString(child)) {
-        printed = print(child);
+        printed = child;
       } else {
         printed = printElement(child, print, indent);
       }
