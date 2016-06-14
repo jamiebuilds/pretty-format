@@ -21,7 +21,6 @@ var isWeakSet      = require('lodash/isWeakSet');
 
 var NEWLINE_REGEXP = /\n/ig;
 var SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
-var plugins = [];
 
 function isArrayish(val) {
   return isArray(val) || isTypedArray(val) || isArrayBuffer(val);
@@ -39,8 +38,8 @@ function isNegativeZero(val) {
   return val === 0 && (1 / val) < 0;
 }
 
-function isPlugin(val) {
-  return plugins.some(function(plugin){
+function isPlugin(val, opts) {
+  return opts.plugins.some(function(plugin){
     return plugin.test(val);
   });
 }
@@ -83,11 +82,13 @@ function printArray(val, refs, opts, state) {
 }
 
 function printPlugin(val, refs, opts, state) {
-  var plugin = plugins.find(function(plugin){
+
+  var plugin = opts.plugins.find(function(plugin){
     return plugin.test(val);
   });
-
-  return plugin.print(val, refs, opts, state, print);
+  const boundPrint = val => print(val, refs, opts, state);
+  const boundIndent = val => indent(val, opts);
+  return plugin.print(val, boundPrint, boundIndent);
 }
 
 function printArguments(val, refs, opts, state) {
@@ -180,7 +181,7 @@ function printSet(val, refs, opts, state) {
 }
 
 function printValue(val, refs, opts, state) {
-  if ( isPlugin    (val) ) return printPlugin(val, refs, opts, state);
+  if ( isPlugin    (val, opts) ) return printPlugin(val, refs, opts, state);
   // Simple values
   if ( isBoolean   (val) ) return Boolean.prototype.toString.call(val);
   if ( isDate      (val) ) return Date.prototype.toISOString.call(val);

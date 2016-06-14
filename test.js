@@ -228,7 +228,7 @@ describe('prettyFormat()', function() {
 
   it('should support plugins', function() {
     'use strict';
-    class Foo {};
+    function Foo() {};
 
     assert.equal(prettyFormat(new Foo(), {
       plugins: [
