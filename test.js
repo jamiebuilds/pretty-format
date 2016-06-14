@@ -225,4 +225,19 @@ describe('prettyFormat()', function() {
       prettyFormat({}, { invalidOption: true });
     });
   });
+
+  it('should support plugins', function() {
+    function Foo() {};
+
+    assert.equal(prettyFormat(new Foo(), {
+      plugins: [{
+        test: function(object) {
+          return object.constructor.name === 'Foo';
+        },
+        print: function() {
+          return 'class Foo'
+        }
+      }]
+    }), 'class Foo');
+  })
 });

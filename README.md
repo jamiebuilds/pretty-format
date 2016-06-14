@@ -45,3 +45,27 @@ Object {
   Symbol(foo): "foo"
 }
 ```
+
+### Plugins
+
+Pretty format also supports adding plugins:
+
+```js
+var fooPlugin = {
+  test: function(val) {
+    return val && val.hasOwnProperty('foo');
+  },
+  print: function(val, print, indent) {
+    return 'Foo: ' + print(val.foo);
+  }
+};
+
+var obj = { foo: { bar: {} } };
+
+prettyFormat(obj, {
+  plugins: [fooPlugin]
+});
+// Foo: Object {
+//   "bar": Object {}
+// }
+```
