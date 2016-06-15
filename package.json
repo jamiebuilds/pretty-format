@@ -10,10 +10,11 @@
   "bugs": "https://github.com/thejameskyle/pretty-format/issues",
   "homepage": "https://github.com/thejameskle/pretty-format",
   "scripts": {
-    "test": "mocha test.js"
+    "test": "mocha test.js test-plugins-ReactTestComponent.js"
   },
   "devDependencies": {
-    "mocha": "^2.1.0"
+    "mocha": "^2.1.0",
+    "react": "15.2.0-rc.1"
   },
   "dependencies": {
     "lodash": "^4.13.1"
