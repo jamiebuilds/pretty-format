@@ -1,8 +1,8 @@
 var assert = require('assert');
-var prettyFormat = require('./');
+var prettyFormat = require('../');
 
 var React = require('react');
-var ReactTestComponent = require('./plugins/ReactTestComponent');
+var ReactTestComponent = require('../plugins/ReactTestComponent');
 var renderer = require('react/lib/ReactTestRenderer');
 
 function returnArguments() {
