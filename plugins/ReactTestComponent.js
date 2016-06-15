@@ -1,32 +1,35 @@
 var reactTestInstance = Symbol.for('react.test.json');
 
-function handleChildren(result, children, indentation, print, indent) {
+function handleChildren(children, indentation, print, indent) {
+  var result = '';
   if (children) {
     children.forEach(function(child) {
-      result.push('\n');
-      result.push(objectToJSX(child, indentation, print, indent));
+      result += '\n' + objectToJSX(child, indentation, print, indent);
     });
-    result.push('\n');
+    result += '\n';
   }
+  return result;
 }
 
-function handleProps(result, node, indentation, print, indent) {
+function handleProps(node, indentation, print, indent) {
   var props = node.props;
+  var result = '';
   if (props) {
     var indentOpts = {
       indent: 2 * (indentation + 1)
     };
     Object.keys(props).forEach(function(prop) {
-      result.push('\n', indent(prop, indentOpts), '=');
+      result += '\n' + indent(prop, indentOpts) + '=';
       var value = props[prop];
       if (typeof value === 'string') {
-        result.push('"', value, '"');
+        result += '"' + value + '"';
       } else {
         var formatted = indent(print(value), {indent: 2 * (indentation + 2)});
-        result.push('{\n', formatted, '\n', indent('}', indentOpts));
+        result += '{\n' + formatted + '\n' + indent('}', indentOpts);
       }
     });
   }
+  return result;
 }
 
 function objectToJSX(root, indentation, print, indent) {
@@ -36,19 +39,19 @@ function objectToJSX(root, indentation, print, indent) {
   if (!type && typeof root === 'string'){
     return indent(root, indentationOpts);
   }
-  var result = [];
+  var result = '';
   if (!root.children) {
-    result.push(indent('<', indentationOpts), type);
-    handleProps(result, root, indentation, print, indent);
-    result.push(' />');
+    result += indent('<', indentationOpts) + type;
+    result += handleProps(root, indentation, print, indent);
+    result += ' />';
   } else {
-    result.push(indent('<', indentationOpts), type);
-    handleProps(result, root, indentation, print, indent);
-    result.push('>');
-    handleChildren(result, root.children, indentation + 1, print, indent);
-    result.push(indent('</', indentationOpts), type, '>');
+    result += indent('<', indentationOpts) + type;
+    result += handleProps(root, indentation, print, indent);
+    result += '>';
+    result += handleChildren(root.children, indentation + 1, print, indent);
+    result += indent('</', indentationOpts) + type + '>';
   }
-  return result.join('');
+  return result;
 }
 
 module.exports = {

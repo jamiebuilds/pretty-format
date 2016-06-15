@@ -1,13 +1,9 @@
 'use strict';
-const print = require('./');
-const ReactTestComponent = require('./plugins/ReactTestComponent');
-
 const assert = require('assert');
-
-// require a local version of React that has ReactTestRender available.
-// TODO: require RC once available.
-const React = require('../../react/build/react');
-const renderer = require('../../react/build/modules/ReactTestRenderer');
+const print = require('./');
+const React = require('react');
+const ReactTestComponent = require('./plugins/ReactTestComponent');
+const renderer = require('react/lib/ReactTestRenderer');
 
 describe('ReactTestComponent', function(){
 

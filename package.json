@@ -13,7 +13,8 @@
     "test": "mocha test.js"
   },
   "devDependencies": {
-    "mocha": "^2.1.0"
+    "mocha": "^2.1.0",
+    "react": "15.2.0-rc.1"
   },
   "dependencies": {
     "lodash": "^4.13.1"
