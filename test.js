@@ -274,6 +274,13 @@ describe('prettyFormat()', function() {
       );
     });
 
+    it('should support a single element with no props or children', function() {
+      assertPrintedJSX(
+        React.createElement('Mouse', null, 'Hello World'),
+        '<Mouse>\n  Hello World\n</Mouse>'
+      );
+    });
+
     it('should support props with strings', function() {
       assertPrintedJSX(
         React.createElement('Mouse', { style: 'color:red' }),
