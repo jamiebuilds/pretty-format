@@ -1,26 +1,26 @@
 'use strict';
-const assert = require('assert');
-const print = require('./');
-const React = require('react');
-const ReactTestComponent = require('./plugins/ReactTestComponent');
-const renderer = require('react/lib/ReactTestRenderer');
+var assert = require('assert');
+var print = require('./');
+var React = require('react');
+var ReactTestComponent = require('./plugins/ReactTestComponent');
+var renderer = require('react/lib/ReactTestRenderer');
 
 describe('ReactTestComponent', function(){
-
-  class Mouse extends React.Component {
-    constructor() {
-      super();
-      this.state = {mouse: 'mouse'};
-    }
-    handleMoose() {
+  var Mouse = React.createClass({
+    getInitialState: function(){
+      return {
+        mouse: 'mouse'
+      }
+    },
+    handleMoose: function() {
       this.setState({mouse: 'moose'});
-    }
-    render() {
+    },
+    render: function() {
       return React.createElement('div', null, this.state.mouse);
     }
-  };
+  });
 
-  const tests = [
+  var tests = [
     renderer.create(React.createElement('Mouse')),
     renderer.create(React.createElement('Mouse', {style: 'color:red'})),
     renderer.create(React.createElement('Mouse', {
@@ -80,7 +80,7 @@ describe('ReactTestComponent', function(){
     )
   ];
 
-  const expectations = [
+  var expectations = [
     '<Mouse />',
     '<Mouse\n  style="color:red" />',
     '<Mouse\n  onclick={\n    function onclick(){}\n  } />',
@@ -90,10 +90,10 @@ describe('ReactTestComponent', function(){
     '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={\n    function (){}\n  }>\n  HELLO\n  <Mouse\n    customProp={\n      Object {\n        "one": "1",\n        "two": 2\n      }\n    }\n    onclick={\n      function (){}\n    }>\n    HELLO\n    <Mouse />\n    CIAO\n  </Mouse>\n  CIAO\n</Mouse>'
   ];
 
-  for(let i = 0, max = tests.length; i < max; i++){
+  tests.forEach(function(test, i){
     it('should match expectations ('+ i +')', function(){
-      let test = tests[i].toJSON();
-      let expectation = expectations[i];
+      var test = tests[i].toJSON();
+      var expectation = expectations[i];
       assert.equal(
         expectation,
         print(test, {
@@ -101,5 +101,5 @@ describe('ReactTestComponent', function(){
         })
       );
     });
-  }
+  });
 });
