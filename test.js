@@ -76,17 +76,17 @@ describe('prettyFormat()', function() {
 
   it('should print a function constructor', function() {
     var val = new Function();
-    assert.equal(prettyFormat(val), 'function anonymous() {\n\n}');
+    assert.equal(prettyFormat(val), '[Function anonymous]');
   });
 
   it('should print an anonymous function', function() {
     var val = function() {};
-    assert.equal(prettyFormat(val), 'function () {}');
+    assert.equal(prettyFormat(val), '[Function anonymous]');
   });
 
   it('should print a named function', function() {
     var val = function named() {};
-    assert.equal(prettyFormat(val), 'function named() {}');
+    assert.equal(prettyFormat(val), '[Function named]');
   });
 
   it('should print Infinity', function() {
@@ -291,7 +291,7 @@ describe('prettyFormat()', function() {
     it('should support a single element with a function prop', function() {
       assertPrintedJSX(
         React.createElement('Mouse', { onclick: function onclick(){} }),
-        '<Mouse\n  onclick={\n    function onclick(){}\n  } />'
+        '<Mouse\n  onclick={\n    [Function onclick]\n  } />'
       );
     });
 
@@ -317,7 +317,7 @@ describe('prettyFormat()', function() {
           'HELLO',
           React.createElement('Mouse'), 'CIAO'
         ),
-        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={\n    function (){}\n  }>\n  HELLO\n  <Mouse />\n  CIAO\n</Mouse>'
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={\n    [Function anonymous]\n  }>\n  HELLO\n  <Mouse />\n  CIAO\n</Mouse>'
       );
     });
 
@@ -332,7 +332,7 @@ describe('prettyFormat()', function() {
           ),
           'CIAO'
         ),
-        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={\n    function (){}\n  }>\n  HELLO\n  <Mouse\n    customProp={\n      Object {\n        "one": "1",\n        "two": 2\n      }\n    }\n    onclick={\n      function (){}\n    }>\n    HELLO\n    <Mouse />\n    CIAO\n  </Mouse>\n  CIAO\n</Mouse>'
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={\n    [Function anonymous]\n  }>\n  HELLO\n  <Mouse\n    customProp={\n      Object {\n        "one": "1",\n        "two": 2\n      }\n    }\n    onclick={\n      [Function anonymous]\n    }>\n    HELLO\n    <Mouse />\n    CIAO\n  </Mouse>\n  CIAO\n</Mouse>'
       );
     });
   });
