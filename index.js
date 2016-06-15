@@ -51,6 +51,14 @@ function indent(str, opts) {
   return indentation + str.replace(NEWLINE_REGEXP, '\n' + indentation);
 }
 
+function printFunction(val) {
+  if (val.name === '') {
+    return '[Function anonymous]'
+  } else {
+    return '[Function ' + val.name + ']';
+  }
+}
+
 function printList(list, refs, opts, state) {
   var body = '';
 
@@ -191,7 +199,7 @@ function printValue(val, refs, opts, state) {
   if ( isBoolean   (val) ) return Boolean.prototype.toString.call(val);
   if ( isDate      (val) ) return Date.prototype.toISOString.call(val);
   if ( isError     (val) ) return '[' + Error.prototype.toString.call(val) + ']';
-  if ( isFunction  (val) ) return Function.prototype.toString.call(val);
+  if ( isFunction  (val) ) return printFunction(val);
   if ( isInfinity  (val) ) return Infinity.toString.call(val);
   if ( isNaN       (val) ) return 'NaN';
   if ( isNull      (val) ) return 'null';
