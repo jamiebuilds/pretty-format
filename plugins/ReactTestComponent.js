@@ -1,64 +1,50 @@
 var reactTestInstance = Symbol.for('react.test.json');
 
-function handleChildren(children, indentation, print, indent) {
-  var result = '';
-  if (children) {
-    children.forEach(function(child) {
-      result += '\n' + objectToJSX(child, indentation, print, indent);
-    });
-    result += '\n';
-  }
-  return result;
+function printChildren(children, print, indent) {
+  return children.map(function(child) {
+    return printElement(child, print, indent);
+  }).join('\n');
 }
 
-function handleProps(node, indentation, print, indent) {
-  var props = node.props;
-  var result = '';
-  if (props) {
-    var indentOpts = {
-      indent: 2 * (indentation + 1)
-    };
-    Object.keys(props).forEach(function(prop) {
-      result += '\n' + indent(prop, indentOpts) + '=';
-      var value = props[prop];
-      if (typeof value === 'string') {
-        result += '"' + value + '"';
-      } else {
-        var formatted = indent(print(value), {indent: 2 * (indentation + 2)});
-        result += '{\n' + formatted + '\n' + indent('}', indentOpts);
-      }
-    });
-  }
-  return result;
+function printProps(props, print, indent) {
+  return Object.keys(props).map(function(name) {
+    var prop = props[name];
+    var printed = print(prop);
+
+    if (typeof prop !== 'string') {
+      printed = '{\n' + indent(indent(printed) + '\n}');
+    }
+
+    return '\n' + indent(name + '=') + printed;
+  }).join('');
 }
 
-function objectToJSX(root, indentation, print, indent) {
-  indentation = indentation || 0;
-  var indentationOpts = {indent: indentation * 2};
-  var type = root.type;
-  if (!type && typeof root === 'string'){
-    return indent(root, indentationOpts);
+function printElement(element, print, indent) {
+  if (typeof element === 'string') {
+    return element;
   }
-  var result = '';
-  if (!root.children) {
-    result += indent('<', indentationOpts) + type;
-    result += handleProps(root, indentation, print, indent);
-    result += ' />';
+
+  var result = '<' + element.type;
+
+  if (element.props) {
+    result += printProps(element.props, print, indent);
+  }
+
+  if (element.children) {
+    var children = printChildren(element.children, print, indent);
+    result += '>\n' + indent(children) + '\n</' + element.type + '>';
   } else {
-    result += indent('<', indentationOpts) + type;
-    result += handleProps(root, indentation, print, indent);
-    result += '>';
-    result += handleChildren(root.children, indentation + 1, print, indent);
-    result += indent('</', indentationOpts) + type + '>';
+    result += ' />';
   }
+
   return result;
 }
 
 module.exports = {
-  test: function(object){
+  test: function(object) {
     return object && object.$$typeof === reactTestInstance;
   },
-  print: function(val, print, indent){
-    return objectToJSX(val, 0, print, indent);
+  print: function(val, print, indent) {
+    return printElement(val, print, indent);
   }
 };

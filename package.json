@@ -10,7 +10,7 @@
   "bugs": "https://github.com/thejameskyle/pretty-format/issues",
   "homepage": "https://github.com/thejameskle/pretty-format",
   "scripts": {
-    "test": "mocha test.js test-plugins-ReactTestComponent.js"
+    "test": "mocha test.js"
   },
   "devDependencies": {
     "mocha": "^2.1.0",
