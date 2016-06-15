@@ -169,9 +169,8 @@ function printWithPlugin(plugin, val, refs, opts, state) {
     return print(val, refs, opts, state);
   }
 
-  function boundIndent(val, options) {
-    options = options || opts;
-    return indent(val, options);
+  function boundIndent(val) {
+    return indent(val, opts);
   }
 
   return plugin.print(val, boundPrint, boundIndent);

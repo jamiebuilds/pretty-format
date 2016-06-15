@@ -1,8 +1,21 @@
 var assert = require('assert');
 var prettyFormat = require('./');
 
+var React = require('react');
+var ReactTestComponent = require('./plugins/ReactTestComponent');
+var renderer = require('react/lib/ReactTestRenderer');
+
 function returnArguments() {
   return arguments;
+}
+
+function assertPrintedJSX(actual, expected) {
+  assert.equal(
+    prettyFormat(renderer.create(actual).toJSON(), {
+      plugins: [ReactTestComponent]
+    }),
+    expected
+  );
 }
 
 describe('prettyFormat()', function() {
@@ -239,5 +252,88 @@ describe('prettyFormat()', function() {
         }
       }]
     }), 'class Foo');
-  })
+  });
+
+  describe('ReactTestComponent plugin', function() {
+    var Mouse = React.createClass({
+      getInitialState: function() {
+        return { mouse: 'mouse' };
+      },
+      handleMoose: function() {
+        this.setState({ mouse: 'moose' });
+      },
+      render: function() {
+        return React.createElement('div', null, this.state.mouse);
+      }
+    });
+
+    it('should support a single element with no props or children', function() {
+      assertPrintedJSX(
+        React.createElement('Mouse'),
+        '<Mouse />'
+      );
+    });
+
+    it('should support a single element with no props or children', function() {
+      assertPrintedJSX(
+        React.createElement('Mouse', null, 'Hello World'),
+        '<Mouse>\n  Hello World\n</Mouse>'
+      );
+    });
+
+    it('should support props with strings', function() {
+      assertPrintedJSX(
+        React.createElement('Mouse', { style: 'color:red' }),
+        '<Mouse\n  style="color:red" />'
+      );
+    });
+
+    it('should support a single element with a function prop', function() {
+      assertPrintedJSX(
+        React.createElement('Mouse', { onclick: function onclick(){} }),
+        '<Mouse\n  onclick={\n    function onclick(){}\n  } />'
+      );
+    });
+
+    it('should support a single element with a object prop', function() {
+      assertPrintedJSX(
+        React.createElement('Mouse', { customProp: { one: '1', two: 2 } }),
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  } />'
+      );
+    });
+
+    it('should support an element with and object prop and children', function() {
+      assertPrintedJSX(
+        React.createElement('Mouse', { customProp: { one: '1', two: 2 } },
+          React.createElement('Mouse')
+        ),
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }>\n  <Mouse />\n</Mouse>'
+      );
+    });
+
+    it('should support an element with complex props and mixed children', function() {
+      assertPrintedJSX(
+        React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: function(){} },
+          'HELLO',
+          React.createElement('Mouse'), 'CIAO'
+        ),
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={\n    function (){}\n  }>\n  HELLO\n  <Mouse />\n  CIAO\n</Mouse>'
+      );
+    });
+
+    it('should support everything all together', function() {
+      assertPrintedJSX(
+        React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: function(){} },
+          'HELLO',
+          React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: function(){} },
+            'HELLO',
+            React.createElement('Mouse'),
+            'CIAO'
+          ),
+          'CIAO'
+        ),
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={\n    function (){}\n  }>\n  HELLO\n  <Mouse\n    customProp={\n      Object {\n        "one": "1",\n        "two": 2\n      }\n    }\n    onclick={\n      function (){}\n    }>\n    HELLO\n    <Mouse />\n    CIAO\n  </Mouse>\n  CIAO\n</Mouse>'
+      );
+    });
+  });
 });

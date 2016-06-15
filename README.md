@@ -69,3 +69,22 @@ prettyFormat(obj, {
 //   "bar": Object {}
 // }
 ```
+
+#### ReactTestComponent plugin
+
+```js
+var prettyFormat = require('pretty-format');
+var reactPlugin = require('pretty-format/plugins/ReactTestComponent');
+
+var React = require('react');
+var renderer = require('react/lib/ReactTestRenderer');
+
+var jsx = React.createElement('h1', null, 'Hello World');
+
+prettyFormat(renderer.create(jsx).toJSON(), {
+  plugins: [reactPlugin]
+});
+// <h1>
+//   Hello World
+// </h1>
+```
