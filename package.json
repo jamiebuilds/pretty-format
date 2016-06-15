@@ -10,10 +10,15 @@
   "bugs": "https://github.com/thejameskyle/pretty-format/issues",
   "homepage": "https://github.com/thejameskle/pretty-format",
   "scripts": {
-    "test": "mocha test.js"
+    "test": "jest"
+  },
+  "jest": {
+    "automock": false,
+    "testEnvironment": "node",
+    "verbose": true
   },
   "devDependencies": {
-    "mocha": "^2.1.0",
+    "jest": "^12.1.0",
     "react": "15.2.0-rc.1"
   },
   "dependencies": {
