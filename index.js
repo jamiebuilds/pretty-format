@@ -116,7 +116,7 @@ function printMap(val, refs, opts, state) {
 
 function printObject(val, refs, opts, state) {
   var result = val.constructor.name + ' {';
-  var keys = Object.keys(val);
+  var keys = Object.keys(val).sort();
   var symbols = getSymbols(val);
 
   if (symbols.length) {

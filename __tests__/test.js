@@ -154,6 +154,11 @@ describe('prettyFormat()', function() {
     assert.equal(prettyFormat(val), 'Object {\n  "prop": "value1",\n  Symbol(symbol1): "value2",\n  Symbol(symbol2): "value3"\n}');
   });
 
+  it('should print an object with sorted properties', function() {
+    var val = { b: 1, a: 2 };
+    assert.equal(prettyFormat(val), 'Object {\n  "a": 2,\n  "b": 1\n}');
+  });
+
   it('should print regular expressions from constructors', function() {
     var val = new RegExp('regexp');
     assert.equal(prettyFormat(val), '/regexp/');
