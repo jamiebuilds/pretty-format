@@ -12,7 +12,11 @@ function printProps(props, print, indent) {
     var printed = print(prop);
 
     if (typeof prop !== 'string') {
-      printed = '{\n' + indent(indent(printed) + '\n}');
+      if (printed.indexOf('\n') !== -1) {
+        printed = '{\n' + indent(indent(printed) + '\n}');
+      } else {
+        printed = '{' + printed + '}';
+      }
     }
 
     return '\n' + indent(name + '=') + printed;

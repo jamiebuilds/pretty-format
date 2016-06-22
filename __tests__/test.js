@@ -296,7 +296,7 @@ describe('prettyFormat()', function() {
     it('should support a single element with a function prop', function() {
       assertPrintedJSX(
         React.createElement('Mouse', { onclick: function onclick(){} }),
-        '<Mouse\n  onclick={\n    [Function onclick]\n  } />'
+        '<Mouse\n  onclick={[Function onclick]} />'
       );
     });
 
@@ -322,7 +322,7 @@ describe('prettyFormat()', function() {
           'HELLO',
           React.createElement('Mouse'), 'CIAO'
         ),
-        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={\n    [Function anonymous]\n  }>\n  HELLO\n  <Mouse />\n  CIAO\n</Mouse>'
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={[Function anonymous]}>\n  HELLO\n  <Mouse />\n  CIAO\n</Mouse>'
       );
     });
 
@@ -337,7 +337,7 @@ describe('prettyFormat()', function() {
           ),
           'CIAO'
         ),
-        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={\n    [Function anonymous]\n  }>\n  HELLO\n  <Mouse\n    customProp={\n      Object {\n        "one": "1",\n        "two": 2\n      }\n    }\n    onclick={\n      [Function anonymous]\n    }>\n    HELLO\n    <Mouse />\n    CIAO\n  </Mouse>\n  CIAO\n</Mouse>'
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={[Function anonymous]}>\n  HELLO\n  <Mouse\n    customProp={\n      Object {\n        "one": "1",\n        "two": 2\n      }\n    }\n    onclick={[Function anonymous]}>\n    HELLO\n    <Mouse />\n    CIAO\n  </Mouse>\n  CIAO\n</Mouse>'
       );
     });
   });
