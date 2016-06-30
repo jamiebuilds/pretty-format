@@ -196,11 +196,6 @@ describe('prettyFormat()', function() {
     assert.equal(prettyFormat(val), 'undefined');
   });
 
-  it('should print undefined', function() {
-    var val = undefined;
-    assert.equal(prettyFormat(val), 'undefined');
-  });
-
   it('should print a WeakMap', function() {
     var val = new WeakMap();
     assert.equal(prettyFormat(val), 'WeakMap {}');
