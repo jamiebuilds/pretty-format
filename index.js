@@ -1,54 +1,39 @@
-var isArguments    = require('lodash/isArguments');
-var isArray        = require('lodash/isArray');
-var isArrayBuffer  = require('lodash/isArrayBuffer');
-var isBoolean      = require('lodash/isBoolean');
-var isDate         = require('lodash/isDate');
-var isError        = require('lodash/isError');
-var isFinite       = require('lodash/isFinite');
-var isFunction     = require('lodash/isFunction');
-var isMap          = require('lodash/isMap');
-var isNaN          = require('lodash/isNaN');
-var isNull         = require('lodash/isNull');
-var isObject       = require('lodash/isObject');
-var isRegExp       = require('lodash/isRegExp');
-var isSet          = require('lodash/isSet');
-var isString       = require('lodash/isString');
-var isSymbol       = require('lodash/isSymbol');
-var isTypedArray   = require('lodash/isTypedArray');
-var isUndefined    = require('lodash/isUndefined');
-var isWeakMap      = require('lodash/isWeakMap');
-var isWeakSet      = require('lodash/isWeakSet');
+'use strict';
 
-var NEWLINE_REGEXP = /\n/ig;
+var toString = Object.prototype.toString;
+var toISOString = Date.prototype.toISOString;
+var errorToString = Error.prototype.toString;
+var regExpToString = RegExp.prototype.toString;
+var symbolToString = Symbol.prototype.toString;
+
 var SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
+var NEWLINE_REGEXP = /\n/ig;
 
-function isArrayish(val) {
-  return isArray(val) || isTypedArray(val) || isArrayBuffer(val);
+var getSymbols = Object.getOwnPropertySymbols || function(obj) {
+  return [];
+};
+
+function isToStringedArrayType(toStringed) {
+  return (
+    toStringed === '[object Array]' ||
+    toStringed === '[object ArrayBuffer]' ||
+    toStringed === '[object DataView]' ||
+    toStringed === '[object Float32Array]' ||
+    toStringed === '[object Float64Array]' ||
+    toStringed === '[object Int8Array]' ||
+    toStringed === '[object Int16Array]' ||
+    toStringed === '[object Int32Array]' ||
+    toStringed === '[object Uint8Array]' ||
+    toStringed === '[object Uint8ClampedArray]' ||
+    toStringed === '[object Uint16Array]' ||
+    toStringed === '[object Uint32Array]'
+  );
 }
 
-function isNumber(val) {
-  return isFinite(val);
-}
-
-function isInfinity(val) {
-  return val === Infinity || val === -Infinity;
-}
-
-function isNegativeZero(val) {
-  return val === 0 && (1 / val) < 0;
-}
-
-function getSymbols(obj) {
-  if (typeof Object.getOwnPropertySymbols === 'function') {
-    return Object.getOwnPropertySymbols(obj);
-  } else {
-    return [];
-  }
-}
-
-function indent(str, opts) {
-  var indentation = new Array(opts.indent + 1).join(' ');
-  return indentation + str.replace(NEWLINE_REGEXP, '\n' + indentation);
+function printNumber(val) {
+  if (val != +val) return 'NaN';
+  var isNegativeZero = val === 0 && (1 / val) < 0;
+  return isNegativeZero ? '-0' : '' + val;
 }
 
 function printFunction(val) {
@@ -59,35 +44,74 @@ function printFunction(val) {
   }
 }
 
-function printList(list, refs, opts, state) {
+function printSymbol(val) {
+  return symbolToString.call(val).replace(SYMBOL_REGEXP, 'Symbol($1)');
+}
+
+function printError(val) {
+  return '[' + errorToString.call(val) + ']';
+}
+
+function printBasicValue(val) {
+  if (val === true || val === false) return '' + val;
+  if (val === undefined) return 'undefined';
+  if (val === null) return 'null';
+
+  var typeOf = typeof val;
+
+  if (typeOf === 'number') return printNumber(val);
+  if (typeOf === 'string') return '"' + val + '"';
+  if (typeOf === 'function') return printFunction(val);
+  if (typeOf === 'symbol') return printSymbol(val);
+
+  var toStringed = toString.call(val);
+
+  if (toStringed === '[object WeakMap]') return 'WeakMap {}';
+  if (toStringed === '[object WeakSet]') return 'WeakSet {}';
+  if (toStringed === '[object Function]' || toStringed === '[object GeneratorFunction]') return printFunction(val);
+  if (toStringed === '[object Symbol]') return printSymbol(val);
+  if (toStringed === '[object Date]') return toISOString.call(val);
+  if (toStringed === '[object Error]') return printError(val);
+  if (toStringed === '[object RegExp]') return regExpToString.call(val);
+  if (toStringed === '[object Arguments]' && val.length === 0) return 'Arguments []';
+  if (isToStringedArrayType(toStringed) && val.length === 0) return val.constructor.name + ' []';
+
+  if (val instanceof Error) return printError(val);
+
+  return false;
+}
+
+function printList(list, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
   var body = '';
 
   if (list.length) {
     body += '\n';
 
+    var innerIndent = prevIndent + indent;
+
     for (var i = 0; i < list.length; i++) {
-      body += indent(print(list[i], refs, opts, state), opts);
+      body += innerIndent + print(list[i], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
 
       if (i < list.length - 1) {
         body += ',\n';
       }
     }
 
-    body += '\n';
+    body += '\n' + prevIndent;
   }
 
   return '[' + body + ']';
 }
 
-function printArray(val, refs, opts, state) {
-  return val.constructor.name + ' ' + printList(val, refs, opts, state);
+function printArguments(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
+  return 'Arguments ' + printList(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
 }
 
-function printArguments(val, refs, opts, state) {
-  return 'Arguments ' + printList(val, refs, opts, state);
+function printArray(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
+  return val.constructor.name + ' ' + printList(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
 }
 
-function printMap(val, refs, opts, state) {
+function printMap(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
   var result = 'Map {';
   var iterator = val.entries();
   var current = iterator.next();
@@ -95,11 +119,13 @@ function printMap(val, refs, opts, state) {
   if (!current.done) {
     result += '\n';
 
-    while (!current.done) {
-      var key = print(current.value[0], refs, opts, state);
-      var value = print(current.value[1], refs, opts, state);
+    var innerIndent = prevIndent + indent;
 
-      result += indent(key + ' => ' + value, opts);
+    while (!current.done) {
+      var key = print(current.value[0], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
+      var value = print(current.value[1], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
+
+      result += innerIndent + key + ' => ' + value;
 
       current = iterator.next();
 
@@ -108,45 +134,47 @@ function printMap(val, refs, opts, state) {
       }
     }
 
-    result += '\n';
+    result += '\n' + prevIndent;
   }
 
   return result + '}';
 }
 
-function printObject(val, refs, opts, state) {
+function printObject(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
   var result = val.constructor.name + ' {';
   var keys = Object.keys(val).sort();
   var symbols = getSymbols(val);
 
   if (symbols.length) {
     keys = keys.filter(function(key) {
-      return !isSymbol(key);
+      return !(typeof key === 'symbol' || toString.call(key) === '[object Symbol]');
     }).concat(symbols);
   }
 
   if (keys.length) {
     result += '\n';
 
+    var innerIndent = prevIndent + indent;
+
     for (var i = 0; i < keys.length; i++) {
       var key = keys[i];
-      var name = print(key, refs, opts, state);
-      var value = print(val[key], refs, opts, state);
+      var name = print(key, indent, innerIndent, refs, maxDepth, currentDepth, plugins);
+      var value = print(val[key], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
 
-      result += indent(name + ': ' + value, opts);
+      result += innerIndent + name + ': ' + value;
 
       if (i < keys.length - 1) {
         result += ',\n';
       }
     }
 
-    result += '\n';
+    result += '\n' + prevIndent;
   }
 
   return result + '}';
 }
 
-function printSet(val, refs, opts, state) {
+function printSet(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
   var result = 'Set {';
   var iterator = val.entries();
   var current = iterator.next();
@@ -154,10 +182,10 @@ function printSet(val, refs, opts, state) {
   if (!current.done) {
     result += '\n';
 
-    while (!current.done) {
-      var value = print(current.value[1], refs, opts, state);
+    var innerIndent = prevIndent + indent;
 
-      result += indent(value, opts);
+    while (!current.done) {
+      result += innerIndent + print(current.value[1], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
 
       current = iterator.next();
 
@@ -166,74 +194,70 @@ function printSet(val, refs, opts, state) {
       }
     }
 
-    result += '\n';
+    result += '\n' + prevIndent;
   }
 
   return result + '}';
 }
 
-function printWithPlugin(plugin, val, refs, opts, state) {
-  function boundPrint(val) {
-    return print(val, refs, opts, state);
-  }
+function printComplexValue(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
+  var toStringed = toString.call(val);
 
-  function boundIndent(val) {
-    return indent(val, opts);
-  }
+  refs = refs.slice();
 
-  return plugin.print(val, boundPrint, boundIndent);
-}
-
-function printValue(val, refs, opts, state) {
-  var plugins = opts.plugins;
-
-  for (var p = 0; p < plugins.length; p++) {
-    var plugin = plugins[p];
-
-    if (plugin.test(val)) {
-      return printWithPlugin(plugin, val, refs, opts, state);
-    }
-  }
-
-  // Simple values
-  if ( isBoolean   (val) ) return Boolean.prototype.toString.call(val);
-  if ( isDate      (val) ) return Date.prototype.toISOString.call(val);
-  if ( isError     (val) ) return '[' + Error.prototype.toString.call(val) + ']';
-  if ( isFunction  (val) ) return printFunction(val);
-  if ( isInfinity  (val) ) return Infinity.toString.call(val);
-  if ( isNaN       (val) ) return 'NaN';
-  if ( isNull      (val) ) return 'null';
-  if ( isNumber    (val) ) return isNegativeZero(val) ? '-0' : '' + val;
-  if ( isRegExp    (val) ) return RegExp.prototype.toString.call(val)
-  if ( isString    (val) ) return '"' + val + '"';
-  if ( isSymbol    (val) ) return Symbol.prototype.toString.call(val).replace(SYMBOL_REGEXP, 'Symbol($1)');
-  if ( isUndefined (val) ) return 'undefined';
-  if ( isWeakMap   (val) ) return 'WeakMap {}';
-  if ( isWeakSet   (val) ) return 'WeakSet {}';
-
-  var stop = opts.maxDepth < state.depth;
-
-  if ( isArguments (val) ) return stop ? '[Arguments]' : printArguments (val, refs, opts, state);
-  if ( isArrayish  (val) ) return stop ? '[Array]'     : printArray     (val, refs, opts, state);
-  if ( isMap       (val) ) return stop ? '[Map]'       : printMap       (val, refs, opts, state);
-  if ( isSet       (val) ) return stop ? '[Set]'       : printSet       (val, refs, opts, state);
-  // purposefully last:
-  if ( isObject    (val) ) return stop ? '[Object]'    : printObject    (val, refs, opts, state);
-}
-
-function print(val, refs, opts, state) {
-  refs = refs.slice(); // clone
-
-  if (refs.indexOf(val) !== -1) {
+  if (refs.indexOf(val) > -1) {
     return '[Circular]';
   } else {
     refs.push(val);
   }
 
-  state.depth++;
-  var result = printValue(val, refs, opts, state);
-  state.depth--;
-  return result;
+  currentDepth++;
+
+  var hitMaxDepth = currentDepth > maxDepth;
+
+  if (toStringed === '[object Arguments]') {
+    return hitMaxDepth ? '[Arguments]' : printArguments(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
+  } else if (isToStringedArrayType(toStringed)) {
+    return hitMaxDepth ? '[Array]' : printArray(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
+  } else if (toStringed === '[object Map]') {
+    return hitMaxDepth ? '[Map]' : printMap(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
+  } else if (toStringed === '[object Set]') {
+    return hitMaxDepth ? '[Set]' : printSet(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
+  } else if (typeof val === 'object') {
+    return hitMaxDepth ? '[Object]' : printObject(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
+  }
+}
+
+function printPlugin(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
+  var match = false;
+
+  for (var p = 0; p < plugins.length; p++) {
+    var plugin = plugins[p];
+
+    if (plugin.test(val)) {
+      match = true;
+      break;
+    }
+  }
+
+  if (!match) {
+    return false;
+  }
+
+  function boundPrint(val) {
+    return print(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
+  }
+
+  function boundIndent(str) {
+    var indentation = prevIndent + indent;
+    return indentation + str.replace(NEWLINE_REGEXP, '\n' + indentation);
+  }
+
+  return plugin.print(val, boundPrint, boundIndent);
+}
+
+function print(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
+  return printBasicValue(val) || printComplexValue(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
 }
 
 var DEFAULTS = {
@@ -260,13 +284,36 @@ function normalizeOptions(opts) {
   return result;
 }
 
-module.exports = function prettyFormat(val, opts) {
-  opts = opts || {};
-  validateOptions(opts)
-  opts = normalizeOptions(opts)
-  plugins = opts.plugins;
+function createIndent(indent) {
+  return new Array(indent + 1).join(' ');
+}
 
-  return print(val, [], opts, {
-    depth: 0
-  });
-};
+function prettyFormat(val, opts) {
+  if (!opts) {
+    opts = DEFAULTS;
+  } else {
+    validateOptions(opts)
+    opts = normalizeOptions(opts);
+  }
+
+  var indent;
+  var refs;
+  var prevIndent = '';
+  var currentDepth = 0;
+
+  if (opts && opts.plugins.length) {
+    indent = createIndent(opts.indent);
+    refs = [];
+    var pluginsResult = printPlugin(val, indent, prevIndent, refs, opts.maxDepth, currentDepth, opts.plugins);
+    if (pluginsResult) return pluginsResult;
+  }
+
+  var basicResult = printBasicValue(val);
+  if (basicResult) return basicResult;
+
+  if (!indent) indent = createIndent(opts.indent);
+  if (!refs) refs = [];
+  return printComplexValue(val, indent, prevIndent, refs, opts.maxDepth, currentDepth, opts.plugins);
+}
+
+module.exports = prettyFormat;

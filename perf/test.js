@@ -1,11 +1,14 @@
-var prettyFormat = require('./');
+var prettyFormat = require('../');
 var util = require('util');
 var chalk = require('chalk');
+var leftPad = require('left-pad');
+var worldGeoJson = require('./world.geo.json');
 
 var TIMES_TO_RUN = 100000;
+var NANOSECONDS = 1000000000;
 
 function testCase(name, fn) {
-  var result, error, time;
+  var result, error, time, total;
 
   try {
     result = fn();
@@ -20,34 +23,38 @@ function testCase(name, fn) {
       fn();
     }
 
-    var diff = process.hrtime(start)[1];
-    var average = diff / TIMES_TO_RUN;
+    var diff = process.hrtime(start);
 
-    time = Math.round(average);
+    total = diff[0] * 1e9 + diff[1];
+    time = Math.round(total / TIMES_TO_RUN);
   }
 
   return {
     name: name,
     result: result,
     error: error,
+    total: total,
     time: time
   };
 }
 
-function test(name, value) {
+function test(name, value, ignoreResult) {
   var formatted = testCase('prettyFormat()  ', function() {
     return prettyFormat(value);
   });
 
   var inspected = testCase('util.inspect()  ', function() {
-    return util.inspect(value);
+    return util.inspect(value, {
+      showHidden: true,
+      depth: null
+    });
   });
 
   var stringified = testCase('JSON.stringify()', function() {
     return JSON.stringify(value, null, '  ');
   });
 
-  var results = [formatted, formatted2, inspected, stringified].sort(function(a, b) {
+  var results = [formatted, inspected, stringified].sort(function(a, b) {
     return a.time - b.time;
   });
 
@@ -62,9 +69,13 @@ function test(name, value) {
   function log(current) {
     var message = current.name;
 
-    if (current.time)   message += ' - ' + current.time + 'ns';
-    if (current.result) message += ' - ' + JSON.stringify(current.result);
+    if (current.time)   message += ' - ' + leftPad(current.time, 6) + 'ns';
+    if (current.total)  message += ' - ' + (current.total / NANOSECONDS) + 's total (' + TIMES_TO_RUN + ' runs)';
     if (current.error)  message += ' - Error: ' + current.error.message;
+
+    if (!ignoreResult && current.result) {
+      message += ' - ' + JSON.stringify(current.result);
+    }
 
     message = ' ' + message + ' ';
 
@@ -153,3 +164,6 @@ test('able to customize indent', { prop: 'value' });
 var bigObj = {};
 for (var i = 0; i < 50; i++) bigObj[i] = i;
 test('big object', bigObj);
+
+TIMES_TO_RUN = 100;
+test('massive', worldGeoJson, true);
