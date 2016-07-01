@@ -97,9 +97,8 @@ function test(name, value, ignoreResult) {
   }
 
   console.log(name + ': ');
-  log(formatted);
-  log(inspected);
-  log(stringified);
+  results.forEach(log);
+  console.log();
 }
 
 function returnArguments() {

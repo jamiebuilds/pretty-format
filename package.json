@@ -10,7 +10,8 @@
   "bugs": "https://github.com/thejameskyle/pretty-format/issues",
   "homepage": "https://github.com/thejameskle/pretty-format",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "perf": "node perf/test.js"
   },
   "jest": {
     "automock": false,
