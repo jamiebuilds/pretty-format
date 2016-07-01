@@ -3,6 +3,9 @@ var util = require('util');
 var chalk = require('chalk');
 var leftPad = require('left-pad');
 var worldGeoJson = require('./world.geo.json');
+var React = require('react');
+var ReactTestRenderer = require('react/lib/ReactTestRenderer');
+var ReactTestComponent = require('../plugins/ReactTestComponent');
 
 var TIMES_TO_RUN = 100000;
 var NANOSECONDS = 1000000000;
@@ -38,9 +41,9 @@ function testCase(name, fn) {
   };
 }
 
-function test(name, value, ignoreResult) {
+function test(name, value, ignoreResult, prettyFormatOpts) {
   var formatted = testCase('prettyFormat()  ', function() {
-    return prettyFormat(value);
+    return prettyFormat(value, prettyFormatOpts);
   });
 
   var inspected = testCase('util.inspect()  ', function() {
@@ -163,6 +166,20 @@ test('able to customize indent', { prop: 'value' });
 var bigObj = {};
 for (var i = 0; i < 50; i++) bigObj[i] = i;
 test('big object', bigObj);
+
+var jsx = React.createElement('div', { prop: { a: 1, b: 2 }, onClick: function() {} },
+  React.createElement('div', { prop: { a: 1, b: 2 } }),
+  React.createElement('div'),
+  React.createElement('div', { prop: { a: 1, b: 2 } },
+    React.createElement('div', null,
+      React.createElement('div')
+    )
+  )
+);
+
+test('react', ReactTestRenderer.create(jsx).toJSON(), false, {
+  plugins: [ReactTestComponent]
+});
 
 TIMES_TO_RUN = 100;
 test('massive', worldGeoJson, true);
