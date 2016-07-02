@@ -2,10 +2,10 @@
 
 > Stringify any JavaScript value.
 
-Supports objects, arrays (and typed arrays and array buffers), arguments,
-booleans, dates, errors, functions, `Infinity`, maps, `NaN`, `null`, numbers,
-regular expressions, sets, strings, symbols, `undefined`, weak maps, weak
-sets, and circular data structures.
+- Supports [all built-in JavaScript types](#type-support)
+- [Blazingly fast](https://gist.github.com/thejameskyle/2b04ffe4941aafa8f970de077843a8fd) (similar performance to v8's `JSON.stringify` and significantly faster than Node's `util.format`)
+- Plugin system for extending with custom types (i.e. [`ReactTestComponent`](#reacttestcomponent-plugin))
+
 
 ## Installation
 
@@ -46,6 +46,10 @@ Object {
 }
 ```
 
+#### Type Support
+
+`Object`, `Array`, `ArrayBuffer`, `DataView`, `Float32Array`, `Float64Array`, `Int8Array`, `Int16Array`, `Int32Array`, `Uint8Array`, `Uint8ClampedArray`, `Uint16Array`, `Uint32Array`, `arguments`, `Boolean`, `Date`, `Error`, `Function`, `Infinity`, `Map`, `NaN`, `null`, `Number`, `RegExp`, `Set`, `String`, `Symbol`, `undefined`, `WeakMap`, `WeakSet`
+
 ### Plugins
 
 Pretty format also supports adding plugins:
@@ -70,7 +74,7 @@ prettyFormat(obj, {
 // }
 ```
 
-#### ReactTestComponent plugin
+#### `ReactTestComponent` plugin
 
 ```js
 var prettyFormat = require('pretty-format');
