@@ -7,7 +7,7 @@ function printChildren(children, print, indent) {
 }
 
 function printProps(props, print, indent) {
-  return Object.keys(props).map(function(name) {
+  return Object.keys(props).sort().map(function(name) {
     var prop = props[name];
     var printed = print(prop);
 

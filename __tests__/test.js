@@ -335,5 +335,28 @@ describe('prettyFormat()', function() {
         '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={[Function anonymous]}>\n  HELLO\n  <Mouse\n    customProp={\n      Object {\n        "one": "1",\n        "two": 2\n      }\n    }\n    onclick={[Function anonymous]}>\n    HELLO\n    <Mouse />\n    CIAO\n  </Mouse>\n  CIAO\n</Mouse>'
       );
     });
+
+    it('should sort props in nested components', function() {
+      assertPrintedJSX(
+        React.createElement('Mouse', {
+            zeus: 'kentaromiura watched me fix this',
+            abc: {
+              one: '1',
+              two: 2
+            }
+          },
+          React.createElement('Mouse', {
+              xyz: 123,
+              acbd: {
+                one: '1',
+                two: 2
+              }
+            },
+            'NESTED'
+          )
+        ),
+        '<Mouse\n  abc={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  zeus="kentaromiura watched me fix this">\n  <Mouse\n    acbd={\n      Object {\n        "one": "1",\n        "two": 2\n      }\n    }\n    xyz={123}>\n    NESTED\n  </Mouse>\n</Mouse>'
+      );
+    });
   });
 });
