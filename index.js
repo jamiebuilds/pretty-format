@@ -141,7 +141,8 @@ function printMap(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins
 }
 
 function printObject(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
-  var result = val.constructor.name + ' {';
+  var constructor = val.constructor ?  val.constructor.name + ' ' : 'Object ';
+  var result = constructor + '{';
   var keys = Object.keys(val).sort();
   var symbols = getSymbols(val);
 

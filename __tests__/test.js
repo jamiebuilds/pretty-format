@@ -254,6 +254,10 @@ describe('prettyFormat()', function() {
     }), 'class Foo');
   });
 
+  it('should print objects with no constructor', function() {
+    assert.equal(prettyFormat(Object.create(null)), 'Object {}');
+  });
+
   describe('ReactTestComponent plugin', function() {
     var Mouse = React.createClass({
       getInitialState: function() {
