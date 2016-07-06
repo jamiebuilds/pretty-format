@@ -36,8 +36,19 @@ function printNumber(val) {
   return isNegativeZero ? '-0' : '' + val;
 }
 
+var ESCAPED_SLASH = /\\/;
+var ESCAPED_SLASH_REPLACEMENT = '\\\\';
+var ESCAPED_QUOTE = /\"/;
+var ESCAPED_QUOTE_REPLACEMENT = "\\\"";
+
 function printString(val) {
-  return JSON.stringify(val);
+  return (
+    '"' +
+    val
+      .replace(ESCAPED_SLASH, ESCAPED_SLASH_REPLACEMENT)
+      .replace(ESCAPED_QUOTE, ESCAPED_QUOTE_REPLACEMENT) +
+    '"'
+  );
 }
 
 function printFunction(val) {
