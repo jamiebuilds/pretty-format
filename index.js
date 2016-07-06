@@ -36,6 +36,21 @@ function printNumber(val) {
   return isNegativeZero ? '-0' : '' + val;
 }
 
+var ESCAPED_SLASH = /\\/g;
+var ESCAPED_SLASH_REPLACEMENT = '\\\\';
+var ESCAPED_QUOTE = /\"/g;
+var ESCAPED_QUOTE_REPLACEMENT = "\\\"";
+
+function printString(val) {
+  return (
+    '"' +
+    val
+      .replace(ESCAPED_SLASH, ESCAPED_SLASH_REPLACEMENT)
+      .replace(ESCAPED_QUOTE, ESCAPED_QUOTE_REPLACEMENT) +
+    '"'
+  );
+}
+
 function printFunction(val) {
   if (val.name === '') {
     return '[Function anonymous]'
@@ -60,7 +75,7 @@ function printBasicValue(val) {
   var typeOf = typeof val;
 
   if (typeOf === 'number') return printNumber(val);
-  if (typeOf === 'string') return '"' + val + '"';
+  if (typeOf === 'string') return printString(val);
   if (typeOf === 'function') return printFunction(val);
   if (typeOf === 'symbol') return printSymbol(val);
 

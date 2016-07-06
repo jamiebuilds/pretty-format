@@ -186,6 +186,11 @@ describe('prettyFormat()', function() {
     assert.equal(prettyFormat(val), '"string"');
   });
 
+  it('should print a string with escapes', function() {
+    assert.equal(prettyFormat('\"-\"'), '"\\"-\\""');
+    assert.equal(prettyFormat('\\ \\\\'), '"\\\\ \\\\\\\\"');
+  });
+
   it('should print a symbol', function() {
     var val = Symbol('symbol');
     assert.equal(prettyFormat(val), 'Symbol(symbol)');
