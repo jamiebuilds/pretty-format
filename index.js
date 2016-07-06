@@ -36,6 +36,10 @@ function printNumber(val) {
   return isNegativeZero ? '-0' : '' + val;
 }
 
+function printString(val) {
+  return JSON.stringify(val);
+}
+
 function printFunction(val) {
   if (val.name === '') {
     return '[Function anonymous]'
@@ -60,7 +64,7 @@ function printBasicValue(val) {
   var typeOf = typeof val;
 
   if (typeOf === 'number') return printNumber(val);
-  if (typeOf === 'string') return '"' + val + '"';
+  if (typeOf === 'string') return printString(val);
   if (typeOf === 'function') return printFunction(val);
   if (typeOf === 'symbol') return printSymbol(val);
 
