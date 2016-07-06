@@ -36,9 +36,9 @@ function printNumber(val) {
   return isNegativeZero ? '-0' : '' + val;
 }
 
-var ESCAPED_SLASH = /\\/;
+var ESCAPED_SLASH = /\\/g;
 var ESCAPED_SLASH_REPLACEMENT = '\\\\';
-var ESCAPED_QUOTE = /\"/;
+var ESCAPED_QUOTE = /\"/g;
 var ESCAPED_QUOTE_REPLACEMENT = "\\\"";
 
 function printString(val) {

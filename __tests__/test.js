@@ -187,8 +187,8 @@ describe('prettyFormat()', function() {
   });
 
   it('should print a string with escapes', function() {
-    assert.equal(prettyFormat('\"'), '"\\""');
-    assert.equal(prettyFormat('\\'), '"\\\\"');
+    assert.equal(prettyFormat('\"-\"'), '"\\"-\\""');
+    assert.equal(prettyFormat('\\ \\\\'), '"\\\\ \\\\\\\\"');
   });
 
   it('should print a symbol', function() {
