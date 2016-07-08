@@ -1,17 +1,17 @@
 'use strict';
 
-var printString = require('./printString');
+const printString = require('./printString');
 
-var toString = Object.prototype.toString;
-var toISOString = Date.prototype.toISOString;
-var errorToString = Error.prototype.toString;
-var regExpToString = RegExp.prototype.toString;
-var symbolToString = Symbol.prototype.toString;
+const toString = Object.prototype.toString;
+const toISOString = Date.prototype.toISOString;
+const errorToString = Error.prototype.toString;
+const regExpToString = RegExp.prototype.toString;
+const symbolToString = Symbol.prototype.toString;
 
-var SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
-var NEWLINE_REGEXP = /\n/ig;
+const SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
+const NEWLINE_REGEXP = /\n/ig;
 
-var getSymbols = Object.getOwnPropertySymbols || (obj => []);
+const getSymbols = Object.getOwnPropertySymbols || (obj => []);
 
 function isToStringedArrayType(toStringed) {
   return (
@@ -32,7 +32,7 @@ function isToStringedArrayType(toStringed) {
 
 function printNumber(val) {
   if (val != +val) return 'NaN';
-  var isNegativeZero = val === 0 && (1 / val) < 0;
+  const isNegativeZero = val === 0 && (1 / val) < 0;
   return isNegativeZero ? '-0' : '' + val;
 }
 
@@ -59,14 +59,14 @@ function printBasicValue(val) {
   if (val === undefined) return 'undefined';
   if (val === null) return 'null';
 
-  var typeOf = typeof val;
+  const typeOf = typeof val;
 
   if (typeOf === 'number') return printNumber(val);
   if (typeOf === 'string') return '"' + printString(val) + '"';
   if (typeOf === 'function') return printFunction(val);
   if (typeOf === 'symbol') return printSymbol(val);
 
-  var toStringed = toString.call(val);
+  const toStringed = toString.call(val);
 
   if (toStringed === '[object WeakMap]') return 'WeakMap {}';
   if (toStringed === '[object WeakSet]') return 'WeakSet {}';
@@ -84,14 +84,14 @@ function printBasicValue(val) {
 }
 
 function printList(list, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
-  var body = '';
+  let body = '';
 
   if (list.length) {
     body += '\n';
 
-    var innerIndent = prevIndent + indent;
+    const innerIndent = prevIndent + indent;
 
-    for (var i = 0; i < list.length; i++) {
+    for (let i = 0; i < list.length; i++) {
       body += innerIndent + print(list[i], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
 
       if (i < list.length - 1) {
@@ -114,18 +114,18 @@ function printArray(val, indent, prevIndent, refs, maxDepth, currentDepth, plugi
 }
 
 function printMap(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
-  var result = 'Map {';
-  var iterator = val.entries();
-  var current = iterator.next();
+  let result = 'Map {';
+  const iterator = val.entries();
+  let current = iterator.next();
 
   if (!current.done) {
     result += '\n';
 
-    var innerIndent = prevIndent + indent;
+    const innerIndent = prevIndent + indent;
 
     while (!current.done) {
-      var key = print(current.value[0], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
-      var value = print(current.value[1], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
+      const key = print(current.value[0], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
+      const value = print(current.value[1], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
 
       result += innerIndent + key + ' => ' + value;
 
@@ -143,10 +143,10 @@ function printMap(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins
 }
 
 function printObject(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
-  var constructor = val.constructor ?  val.constructor.name + ' ' : 'Object ';
-  var result = constructor + '{';
-  var keys = Object.keys(val).sort();
-  var symbols = getSymbols(val);
+  const constructor = val.constructor ?  val.constructor.name + ' ' : 'Object ';
+  let result = constructor + '{';
+  let keys = Object.keys(val).sort();
+  const symbols = getSymbols(val);
 
   if (symbols.length) {
     keys = keys
@@ -157,12 +157,12 @@ function printObject(val, indent, prevIndent, refs, maxDepth, currentDepth, plug
   if (keys.length) {
     result += '\n';
 
-    var innerIndent = prevIndent + indent;
+    const innerIndent = prevIndent + indent;
 
-    for (var i = 0; i < keys.length; i++) {
-      var key = keys[i];
-      var name = print(key, indent, innerIndent, refs, maxDepth, currentDepth, plugins);
-      var value = print(val[key], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      const name = print(key, indent, innerIndent, refs, maxDepth, currentDepth, plugins);
+      const value = print(val[key], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
 
       result += innerIndent + name + ': ' + value;
 
@@ -178,14 +178,14 @@ function printObject(val, indent, prevIndent, refs, maxDepth, currentDepth, plug
 }
 
 function printSet(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
-  var result = 'Set {';
-  var iterator = val.entries();
-  var current = iterator.next();
+  let result = 'Set {';
+  const iterator = val.entries();
+  let current = iterator.next();
 
   if (!current.done) {
     result += '\n';
 
-    var innerIndent = prevIndent + indent;
+    const innerIndent = prevIndent + indent;
 
     while (!current.done) {
       result += innerIndent + print(current.value[1], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
@@ -204,7 +204,7 @@ function printSet(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins
 }
 
 function printComplexValue(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
-  var toStringed = toString.call(val);
+  const toStringed = toString.call(val);
 
   refs = refs.slice();
 
@@ -216,7 +216,7 @@ function printComplexValue(val, indent, prevIndent, refs, maxDepth, currentDepth
 
   currentDepth++;
 
-  var hitMaxDepth = currentDepth > maxDepth;
+  const hitMaxDepth = currentDepth > maxDepth;
 
   if (toStringed === '[object Arguments]') {
     return hitMaxDepth ? '[Arguments]' : printArguments(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
@@ -232,10 +232,11 @@ function printComplexValue(val, indent, prevIndent, refs, maxDepth, currentDepth
 }
 
 function printPlugin(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
-  var match = false;
+  let match = false;
+  let plugin;
 
-  for (var p = 0; p < plugins.length; p++) {
-    var plugin = plugins[p];
+  for (let p = 0; p < plugins.length; p++) {
+    plugin = plugins[p];
 
     if (plugin.test(val)) {
       match = true;
@@ -252,7 +253,7 @@ function printPlugin(val, indent, prevIndent, refs, maxDepth, currentDepth, plug
   }
 
   function boundIndent(str) {
-    var indentation = prevIndent + indent;
+    const indentation = prevIndent + indent;
     return indentation + str.replace(NEWLINE_REGEXP, '\n' + indentation);
   }
 
@@ -263,7 +264,7 @@ function print(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
   return printBasicValue(val) || printComplexValue(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
 }
 
-var DEFAULTS = {
+const DEFAULTS = {
   indent: 2,
   maxDepth: Infinity,
   plugins: []
@@ -278,7 +279,7 @@ function validateOptions(opts) {
 }
 
 function normalizeOptions(opts) {
-  var result = {};
+  const result = {};
 
   Object.keys(DEFAULTS).forEach(key =>
     result[key] = opts.hasOwnProperty(key) ? opts[key] : DEFAULTS[key]
@@ -299,10 +300,10 @@ function prettyFormat(val, opts) {
     opts = normalizeOptions(opts);
   }
 
-  var indent;
-  var refs;
-  var prevIndent = '';
-  var currentDepth = 0;
+  let indent;
+  let refs;
+  const prevIndent = '';
+  const currentDepth = 0;
 
   if (opts && opts.plugins.length) {
     indent = createIndent(opts.indent);

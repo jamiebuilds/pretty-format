@@ -1,6 +1,8 @@
-var printString = require('../printString');
+'use strict';
 
-var reactTestInstance = Symbol.for('react.test.json');
+const printString = require('../printString');
+
+const reactTestInstance = Symbol.for('react.test.json');
 
 function printChildren(children, print, indent) {
   return children.map(child => printElement(child, print, indent)).join('\n');
@@ -8,8 +10,8 @@ function printChildren(children, print, indent) {
 
 function printProps(props, print, indent) {
   return Object.keys(props).sort().map(name => {
-    var prop = props[name];
-    var printed = print(prop);
+    const prop = props[name];
+    let printed = print(prop);
 
     if (typeof prop !== 'string') {
       if (printed.indexOf('\n') !== -1) {
@@ -28,14 +30,14 @@ function printElement(element, print, indent) {
     return printString(element);
   }
 
-  var result = '<' + element.type;
+  let result = '<' + element.type;
 
   if (element.props) {
     result += printProps(element.props, print, indent);
   }
 
   if (element.children) {
-    var children = printChildren(element.children, print, indent);
+    const children = printChildren(element.children, print, indent);
     result += '>\n' + indent(children) + '\n</' + element.type + '>';
   } else {
     result += ' />';
