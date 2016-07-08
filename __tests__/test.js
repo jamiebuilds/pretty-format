@@ -1,4 +1,3 @@
-var assert = require('assert');
 var prettyFormat = require('../');
 
 var React = require('react');
@@ -10,244 +9,243 @@ function returnArguments() {
 }
 
 function assertPrintedJSX(actual, expected) {
-  assert.equal(
+  expect(
     prettyFormat(renderer.create(actual).toJSON(), {
       plugins: [ReactTestComponent]
-    }),
-    expected
-  );
+    })
+  ).toEqual(expected);
 }
 
 describe('prettyFormat()', () => {
   it('should print empty arguments', () => {
     var val = returnArguments();
-    assert.equal(prettyFormat(val), 'Arguments []');
+    expect(prettyFormat(val)).toEqual('Arguments []');
   });
 
   it('should print arguments', () => {
     var val = returnArguments(1, 2, 3);
-    assert.equal(prettyFormat(val), 'Arguments [\n  1,\n  2,\n  3\n]');
+    expect(prettyFormat(val)).toEqual('Arguments [\n  1,\n  2,\n  3\n]');
   });
 
   it('should print an empty array', () => {
     var val = [];
-    assert.equal(prettyFormat(val), 'Array []');
+    expect(prettyFormat(val)).toEqual('Array []');
   });
 
   it('should print an array with items', () => {
     var val = [1, 2, 3];
-    assert.equal(prettyFormat(val), 'Array [\n  1,\n  2,\n  3\n]');
+    expect(prettyFormat(val)).toEqual('Array [\n  1,\n  2,\n  3\n]');
   });
 
   it('should print a typed array', () => {
     var val = new Uint32Array(3);
-    assert.equal(prettyFormat(val), 'Uint32Array [\n  0,\n  0,\n  0\n]');
+    expect(prettyFormat(val)).toEqual('Uint32Array [\n  0,\n  0,\n  0\n]');
   });
 
   it('should print an array buffer', () => {
     var val = new ArrayBuffer(3);
-    assert.equal(prettyFormat(val), 'ArrayBuffer []');
+    expect(prettyFormat(val)).toEqual('ArrayBuffer []');
   });
 
   it('should print a nested array', () => {
     var val = [[1, 2, 3]];
-    assert.equal(prettyFormat(val), 'Array [\n  Array [\n    1,\n    2,\n    3\n  ]\n]');
+    expect(prettyFormat(val)).toEqual('Array [\n  Array [\n    1,\n    2,\n    3\n  ]\n]');
   });
 
   it('should print true', () => {
     var val = true;
-    assert.equal(prettyFormat(val), 'true');
+    expect(prettyFormat(val)).toEqual('true');
   });
 
   it('should print false', () => {
     var val = false;
-    assert.equal(prettyFormat(val), 'false');
+    expect(prettyFormat(val)).toEqual('false');
   });
 
   it('should print an error', () => {
     var val = new Error();
-    assert.equal(prettyFormat(val), '[Error]');
+    expect(prettyFormat(val)).toEqual('[Error]');
   });
 
   it('should print a typed error with a message', () => {
     var val = new TypeError('message');
-    assert.equal(prettyFormat(val), '[TypeError: message]');
+    expect(prettyFormat(val)).toEqual('[TypeError: message]');
   });
 
   it('should print a function constructor', () => {
     var val = new Function();
-    assert.equal(prettyFormat(val), '[Function anonymous]');
+    expect(prettyFormat(val)).toEqual('[Function anonymous]');
   });
 
   it('should print an anonymous function', () => {
     var val = () => {};
-    assert.equal(prettyFormat(val), '[Function anonymous]');
+    expect(prettyFormat(val)).toEqual('[Function anonymous]');
   });
 
   it('should print a named function', () => {
     var val = function named() {};
-    assert.equal(prettyFormat(val), '[Function named]');
+    expect(prettyFormat(val)).toEqual('[Function named]');
   });
 
   it('should print Infinity', () => {
     var val = Infinity;
-    assert.equal(prettyFormat(val), 'Infinity');
+    expect(prettyFormat(val)).toEqual('Infinity');
   });
 
   it('should print -Infinity', () => {
     var val = -Infinity;
-    assert.equal(prettyFormat(val), '-Infinity');
+    expect(prettyFormat(val)).toEqual('-Infinity');
   });
 
   it('should print an empty map', () => {
     var val = new Map();
-    assert.equal(prettyFormat(val), 'Map {}');
+    expect(prettyFormat(val)).toEqual('Map {}');
   });
 
   it('should print a map with values', () => {
     var val = new Map();
     val.set('prop1', 'value1');
     val.set('prop2', 'value2');
-    assert.equal(prettyFormat(val), 'Map {\n  "prop1" => "value1",\n  "prop2" => "value2"\n}');
+    expect(prettyFormat(val)).toEqual('Map {\n  "prop1" => "value1",\n  "prop2" => "value2"\n}');
   });
 
   it('should print a map with non-string keys', () => {
     var val = new Map();
     val.set({ prop: 'value' }, { prop: 'value' });
-    assert.equal(prettyFormat(val), 'Map {\n  Object {\n    "prop": "value"\n  } => Object {\n    "prop": "value"\n  }\n}');
+    expect(prettyFormat(val)).toEqual('Map {\n  Object {\n    "prop": "value"\n  } => Object {\n    "prop": "value"\n  }\n}');
   });
 
   it('should print NaN', () => {
     var val = NaN;
-    assert.equal(prettyFormat(val), 'NaN');
+    expect(prettyFormat(val)).toEqual('NaN');
   });
 
   it('should print null', () => {
     var val = null;
-    assert.equal(prettyFormat(val), 'null');
+    expect(prettyFormat(val)).toEqual('null');
   });
 
   it('should print a number', () => {
     var val = 123;
-    assert.equal(prettyFormat(val), '123');
+    expect(prettyFormat(val)).toEqual('123');
   });
 
   it('should print a date', () => {
     var val = new Date(10e11);
-    assert.equal(prettyFormat(val), '2001-09-09T01:46:40.000Z');
+    expect(prettyFormat(val)).toEqual('2001-09-09T01:46:40.000Z');
   });
 
   it('should print an empty object', () => {
     var val = {};
-    assert.equal(prettyFormat(val), 'Object {}');
+    expect(prettyFormat(val)).toEqual('Object {}');
   });
 
   it('should print an object with properties', () => {
     var val = { prop1: 'value1', prop2: 'value2' };
-    assert.equal(prettyFormat(val), 'Object {\n  "prop1": "value1",\n  "prop2": "value2"\n}');
+    expect(prettyFormat(val), 'Object {\n  "prop1": "value1",\n  "prop2": "value2"\n}');
   });
 
   it('should print an object with properties and symbols', () => {
     var val = { prop: 'value1' };
     val[Symbol('symbol1')] = 'value2';
     val[Symbol('symbol2')] = 'value3';
-    assert.equal(prettyFormat(val), 'Object {\n  "prop": "value1",\n  Symbol(symbol1): "value2",\n  Symbol(symbol2): "value3"\n}');
+    expect(prettyFormat(val), 'Object {\n  "prop": "value1",\n  Symbol(symbol1): "value2",\n  Symbol(symbol2): "value3"\n}');
   });
 
   it('should print an object with sorted properties', () => {
     var val = { b: 1, a: 2 };
-    assert.equal(prettyFormat(val), 'Object {\n  "a": 2,\n  "b": 1\n}');
+    expect(prettyFormat(val), 'Object {\n  "a": 2,\n  "b": 1\n}');
   });
 
   it('should print regular expressions from constructors', () => {
     var val = new RegExp('regexp');
-    assert.equal(prettyFormat(val), '/regexp/');
+    expect(prettyFormat(val), '/regexp/');
   });
 
   it('should print regular expressions from literals', () => {
     var val = /regexp/ig;
-    assert.equal(prettyFormat(val), '/regexp/gi');
+    expect(prettyFormat(val), '/regexp/gi');
   });
 
   it('should print an empty set', () => {
     var val = new Set();
-    assert.equal(prettyFormat(val), 'Set {}');
+    expect(prettyFormat(val), 'Set {}');
   });
 
   it('should print a set with values', () => {
     var val = new Set();
     val.add('value1');
     val.add('value2');
-    assert.equal(prettyFormat(val), 'Set {\n  "value1",\n  "value2"\n}');
+    expect(prettyFormat(val), 'Set {\n  "value1",\n  "value2"\n}');
   });
 
   it('should print a string', () => {
     var val = 'string';
-    assert.equal(prettyFormat(val), '"string"');
+    expect(prettyFormat(val), '"string"');
   });
 
   it('should print a string with escapes', () => {
-    assert.equal(prettyFormat('\"-\"'), '"\\"-\\""');
-    assert.equal(prettyFormat('\\ \\\\'), '"\\\\ \\\\\\\\"');
+    expect(prettyFormat('\"-\"'), '"\\"-\\""');
+    expect(prettyFormat('\\ \\\\'), '"\\\\ \\\\\\\\"');
   });
 
   it('should print a symbol', () => {
     var val = Symbol('symbol');
-    assert.equal(prettyFormat(val), 'Symbol(symbol)');
+    expect(prettyFormat(val), 'Symbol(symbol)');
   });
 
   it('should print undefined', () => {
     var val = undefined;
-    assert.equal(prettyFormat(val), 'undefined');
+    expect(prettyFormat(val), 'undefined');
   });
 
   it('should print a WeakMap', () => {
     var val = new WeakMap();
-    assert.equal(prettyFormat(val), 'WeakMap {}');
+    expect(prettyFormat(val), 'WeakMap {}');
   });
 
   it('should print a WeakSet', () => {
     var val = new WeakSet();
-    assert.equal(prettyFormat(val), 'WeakSet {}');
+    expect(prettyFormat(val), 'WeakSet {}');
   });
 
   it('should print deeply nested objects', () => {
     var val = { prop: { prop: { prop: 'value' } } };
-    assert.equal(prettyFormat(val), 'Object {\n  "prop": Object {\n    "prop": Object {\n      "prop": "value"\n    }\n  }\n}');
+    expect(prettyFormat(val), 'Object {\n  "prop": Object {\n    "prop": Object {\n      "prop": "value"\n    }\n  }\n}');
   });
 
   it('should print circular references', () => {
     var val = {};
     val.prop = val;
-    assert.equal(prettyFormat(val), 'Object {\n  "prop": [Circular]\n}')
+    expect(prettyFormat(val), 'Object {\n  "prop": [Circular]\n}')
   });
 
   it('should print parallel references', () => {
     var inner = {};
     var val = { prop1: inner, prop2: inner };
-    assert.equal(prettyFormat(val), 'Object {\n  "prop1": Object {},\n  "prop2": Object {}\n}')
+    expect(prettyFormat(val), 'Object {\n  "prop1": Object {},\n  "prop2": Object {}\n}')
   });
 
   it('should be able to customize indent', () => {
     var val = { prop: 'value' };
-    assert.equal(prettyFormat(val, { indent: 4 }), 'Object {\n    "prop": "value"\n}');
+    expect(prettyFormat(val, { indent: 4 }), 'Object {\n    "prop": "value"\n}');
   });
 
   it('should be able to customize the max depth', () => {
     var val = { prop: { prop: { prop: {} } } };
-    assert.equal(prettyFormat(val, { maxDepth: 2 }), 'Object {\n  "prop": Object {\n    "prop": [Object]\n  }\n}');
+    expect(prettyFormat(val, { maxDepth: 2 }), 'Object {\n  "prop": Object {\n    "prop": [Object]\n  }\n}');
   });
 
   it('should throw on invalid options', () => {
-    assert.throws(() => {
+    expect(() => {
       prettyFormat({}, { invalidOption: true });
-    });
+    }).toThrow();
   });
 
   it('should support plugins', () => {
     function Foo() {};
 
-    assert.equal(prettyFormat(new Foo(), {
+    expect(prettyFormat(new Foo(), {
       plugins: [{
         test: function(object) {
           return object.constructor.name === 'Foo';
@@ -260,7 +258,7 @@ describe('prettyFormat()', () => {
   });
 
   it('should print objects with no constructor', () => {
-    assert.equal(prettyFormat(Object.create(null)), 'Object {}');
+    expect(prettyFormat(Object.create(null)), 'Object {}');
   });
 
   describe('ReactTestComponent plugin', () => {
