@@ -18,233 +18,233 @@ function assertPrintedJSX(actual, expected) {
   );
 }
 
-describe('prettyFormat()', function() {
-  it('should print empty arguments', function() {
+describe('prettyFormat()', () => {
+  it('should print empty arguments', () => {
     var val = returnArguments();
     assert.equal(prettyFormat(val), 'Arguments []');
   });
 
-  it('should print arguments', function() {
+  it('should print arguments', () => {
     var val = returnArguments(1, 2, 3);
     assert.equal(prettyFormat(val), 'Arguments [\n  1,\n  2,\n  3\n]');
   });
 
-  it('should print an empty array', function() {
+  it('should print an empty array', () => {
     var val = [];
     assert.equal(prettyFormat(val), 'Array []');
   });
 
-  it('should print an array with items', function() {
+  it('should print an array with items', () => {
     var val = [1, 2, 3];
     assert.equal(prettyFormat(val), 'Array [\n  1,\n  2,\n  3\n]');
   });
 
-  it('should print a typed array', function() {
+  it('should print a typed array', () => {
     var val = new Uint32Array(3);
     assert.equal(prettyFormat(val), 'Uint32Array [\n  0,\n  0,\n  0\n]');
   });
 
-  it('should print an array buffer', function() {
+  it('should print an array buffer', () => {
     var val = new ArrayBuffer(3);
     assert.equal(prettyFormat(val), 'ArrayBuffer []');
   });
 
-  it('should print a nested array', function() {
+  it('should print a nested array', () => {
     var val = [[1, 2, 3]];
     assert.equal(prettyFormat(val), 'Array [\n  Array [\n    1,\n    2,\n    3\n  ]\n]');
   });
 
-  it('should print true', function() {
+  it('should print true', () => {
     var val = true;
     assert.equal(prettyFormat(val), 'true');
   });
 
-  it('should print false', function() {
+  it('should print false', () => {
     var val = false;
     assert.equal(prettyFormat(val), 'false');
   });
 
-  it('should print an error', function() {
+  it('should print an error', () => {
     var val = new Error();
     assert.equal(prettyFormat(val), '[Error]');
   });
 
-  it('should print a typed error with a message', function() {
+  it('should print a typed error with a message', () => {
     var val = new TypeError('message');
     assert.equal(prettyFormat(val), '[TypeError: message]');
   });
 
-  it('should print a function constructor', function() {
+  it('should print a function constructor', () => {
     var val = new Function();
     assert.equal(prettyFormat(val), '[Function anonymous]');
   });
 
-  it('should print an anonymous function', function() {
-    var val = function() {};
+  it('should print an anonymous function', () => {
+    var val = () => {};
     assert.equal(prettyFormat(val), '[Function anonymous]');
   });
 
-  it('should print a named function', function() {
+  it('should print a named function', () => {
     var val = function named() {};
     assert.equal(prettyFormat(val), '[Function named]');
   });
 
-  it('should print Infinity', function() {
+  it('should print Infinity', () => {
     var val = Infinity;
     assert.equal(prettyFormat(val), 'Infinity');
   });
 
-  it('should print -Infinity', function() {
+  it('should print -Infinity', () => {
     var val = -Infinity;
     assert.equal(prettyFormat(val), '-Infinity');
   });
 
-  it('should print an empty map', function() {
+  it('should print an empty map', () => {
     var val = new Map();
     assert.equal(prettyFormat(val), 'Map {}');
   });
 
-  it('should print a map with values', function() {
+  it('should print a map with values', () => {
     var val = new Map();
     val.set('prop1', 'value1');
     val.set('prop2', 'value2');
     assert.equal(prettyFormat(val), 'Map {\n  "prop1" => "value1",\n  "prop2" => "value2"\n}');
   });
 
-  it('should print a map with non-string keys', function() {
+  it('should print a map with non-string keys', () => {
     var val = new Map();
     val.set({ prop: 'value' }, { prop: 'value' });
     assert.equal(prettyFormat(val), 'Map {\n  Object {\n    "prop": "value"\n  } => Object {\n    "prop": "value"\n  }\n}');
   });
 
-  it('should print NaN', function() {
+  it('should print NaN', () => {
     var val = NaN;
     assert.equal(prettyFormat(val), 'NaN');
   });
 
-  it('should print null', function() {
+  it('should print null', () => {
     var val = null;
     assert.equal(prettyFormat(val), 'null');
   });
 
-  it('should print a number', function() {
+  it('should print a number', () => {
     var val = 123;
     assert.equal(prettyFormat(val), '123');
   });
 
-  it('should print a date', function() {
+  it('should print a date', () => {
     var val = new Date(10e11);
     assert.equal(prettyFormat(val), '2001-09-09T01:46:40.000Z');
   });
 
-  it('should print an empty object', function() {
+  it('should print an empty object', () => {
     var val = {};
     assert.equal(prettyFormat(val), 'Object {}');
   });
 
-  it('should print an object with properties', function() {
+  it('should print an object with properties', () => {
     var val = { prop1: 'value1', prop2: 'value2' };
     assert.equal(prettyFormat(val), 'Object {\n  "prop1": "value1",\n  "prop2": "value2"\n}');
   });
 
-  it('should print an object with properties and symbols', function() {
+  it('should print an object with properties and symbols', () => {
     var val = { prop: 'value1' };
     val[Symbol('symbol1')] = 'value2';
     val[Symbol('symbol2')] = 'value3';
     assert.equal(prettyFormat(val), 'Object {\n  "prop": "value1",\n  Symbol(symbol1): "value2",\n  Symbol(symbol2): "value3"\n}');
   });
 
-  it('should print an object with sorted properties', function() {
+  it('should print an object with sorted properties', () => {
     var val = { b: 1, a: 2 };
     assert.equal(prettyFormat(val), 'Object {\n  "a": 2,\n  "b": 1\n}');
   });
 
-  it('should print regular expressions from constructors', function() {
+  it('should print regular expressions from constructors', () => {
     var val = new RegExp('regexp');
     assert.equal(prettyFormat(val), '/regexp/');
   });
 
-  it('should print regular expressions from literals', function() {
+  it('should print regular expressions from literals', () => {
     var val = /regexp/ig;
     assert.equal(prettyFormat(val), '/regexp/gi');
   });
 
-  it('should print an empty set', function() {
+  it('should print an empty set', () => {
     var val = new Set();
     assert.equal(prettyFormat(val), 'Set {}');
   });
 
-  it('should print a set with values', function() {
+  it('should print a set with values', () => {
     var val = new Set();
     val.add('value1');
     val.add('value2');
     assert.equal(prettyFormat(val), 'Set {\n  "value1",\n  "value2"\n}');
   });
 
-  it('should print a string', function() {
+  it('should print a string', () => {
     var val = 'string';
     assert.equal(prettyFormat(val), '"string"');
   });
 
-  it('should print a string with escapes', function() {
+  it('should print a string with escapes', () => {
     assert.equal(prettyFormat('\"-\"'), '"\\"-\\""');
     assert.equal(prettyFormat('\\ \\\\'), '"\\\\ \\\\\\\\"');
   });
 
-  it('should print a symbol', function() {
+  it('should print a symbol', () => {
     var val = Symbol('symbol');
     assert.equal(prettyFormat(val), 'Symbol(symbol)');
   });
 
-  it('should print undefined', function() {
+  it('should print undefined', () => {
     var val = undefined;
     assert.equal(prettyFormat(val), 'undefined');
   });
 
-  it('should print a WeakMap', function() {
+  it('should print a WeakMap', () => {
     var val = new WeakMap();
     assert.equal(prettyFormat(val), 'WeakMap {}');
   });
 
-  it('should print a WeakSet', function() {
+  it('should print a WeakSet', () => {
     var val = new WeakSet();
     assert.equal(prettyFormat(val), 'WeakSet {}');
   });
 
-  it('should print deeply nested objects', function() {
+  it('should print deeply nested objects', () => {
     var val = { prop: { prop: { prop: 'value' } } };
     assert.equal(prettyFormat(val), 'Object {\n  "prop": Object {\n    "prop": Object {\n      "prop": "value"\n    }\n  }\n}');
   });
 
-  it('should print circular references', function() {
+  it('should print circular references', () => {
     var val = {};
     val.prop = val;
     assert.equal(prettyFormat(val), 'Object {\n  "prop": [Circular]\n}')
   });
 
-  it('should print parallel references', function() {
+  it('should print parallel references', () => {
     var inner = {};
     var val = { prop1: inner, prop2: inner };
     assert.equal(prettyFormat(val), 'Object {\n  "prop1": Object {},\n  "prop2": Object {}\n}')
   });
 
-  it('should be able to customize indent', function() {
+  it('should be able to customize indent', () => {
     var val = { prop: 'value' };
     assert.equal(prettyFormat(val, { indent: 4 }), 'Object {\n    "prop": "value"\n}');
   });
 
-  it('should be able to customize the max depth', function() {
+  it('should be able to customize the max depth', () => {
     var val = { prop: { prop: { prop: {} } } };
     assert.equal(prettyFormat(val, { maxDepth: 2 }), 'Object {\n  "prop": Object {\n    "prop": [Object]\n  }\n}');
   });
 
-  it('should throw on invalid options', function() {
-    assert.throws(function() {
+  it('should throw on invalid options', () => {
+    assert.throws(() => {
       prettyFormat({}, { invalidOption: true });
     });
   });
 
-  it('should support plugins', function() {
+  it('should support plugins', () => {
     function Foo() {};
 
     assert.equal(prettyFormat(new Foo(), {
@@ -252,66 +252,66 @@ describe('prettyFormat()', function() {
         test: function(object) {
           return object.constructor.name === 'Foo';
         },
-        print: function() {
+        print: () => {
           return 'class Foo'
         }
       }]
     }), 'class Foo');
   });
 
-  it('should print objects with no constructor', function() {
+  it('should print objects with no constructor', () => {
     assert.equal(prettyFormat(Object.create(null)), 'Object {}');
   });
 
-  describe('ReactTestComponent plugin', function() {
+  describe('ReactTestComponent plugin', () => {
     var Mouse = React.createClass({
-      getInitialState: function() {
+      getInitialState: () => {
         return { mouse: 'mouse' };
       },
-      handleMoose: function() {
+      handleMoose: () => {
         this.setState({ mouse: 'moose' });
       },
-      render: function() {
+      render: () => {
         return React.createElement('div', null, this.state.mouse);
       }
     });
 
-    it('should support a single element with no props or children', function() {
+    it('should support a single element with no props or children', () => {
       assertPrintedJSX(
         React.createElement('Mouse'),
         '<Mouse />'
       );
     });
 
-    it('should support a single element with no props or children', function() {
+    it('should support a single element with no props or children', () => {
       assertPrintedJSX(
         React.createElement('Mouse', null, 'Hello World'),
         '<Mouse>\n  Hello World\n</Mouse>'
       );
     });
 
-    it('should support props with strings', function() {
+    it('should support props with strings', () => {
       assertPrintedJSX(
         React.createElement('Mouse', { style: 'color:red' }),
         '<Mouse\n  style="color:red" />'
       );
     });
 
-    it('should support a single element with a function prop', function() {
+    it('should support a single element with a function prop', () => {
       assertPrintedJSX(
         React.createElement('Mouse', { onclick: function onclick(){} }),
         '<Mouse\n  onclick={[Function onclick]} />'
       );
     });
 
-    it('should support a single element with a object prop', function() {
+    it('should support a single element with a object prop', () => {
       assertPrintedJSX(
         React.createElement('Mouse', { customProp: { one: '1', two: 2 } }),
         '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  } />'
       );
     });
 
-    it('should support an element with and object prop and children', function() {
+    it('should support an element with and object prop and children', () => {
       assertPrintedJSX(
         React.createElement('Mouse', { customProp: { one: '1', two: 2 } },
           React.createElement('Mouse')
@@ -320,9 +320,9 @@ describe('prettyFormat()', function() {
       );
     });
 
-    it('should support an element with complex props and mixed children', function() {
+    it('should support an element with complex props and mixed children', () => {
       assertPrintedJSX(
-        React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: function(){} },
+        React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: () => {} },
           'HELLO',
           React.createElement('Mouse'), 'CIAO'
         ),
@@ -330,11 +330,11 @@ describe('prettyFormat()', function() {
       );
     });
 
-    it('should support everything all together', function() {
+    it('should support everything all together', () => {
       assertPrintedJSX(
-        React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: function(){} },
+        React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: () => {} },
           'HELLO',
-          React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: function(){} },
+          React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: () => {} },
             'HELLO',
             React.createElement('Mouse'),
             'CIAO'
@@ -345,7 +345,7 @@ describe('prettyFormat()', function() {
       );
     });
 
-    it('should sort props in nested components', function() {
+    it('should sort props in nested components', () => {
       assertPrintedJSX(
         React.createElement('Mouse', {
             zeus: 'kentaromiura watched me fix this',
