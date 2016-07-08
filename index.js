@@ -34,19 +34,11 @@ function printNumber(val) {
   return isNegativeZero ? '-0' : '' + val;
 }
 
-var ESCAPED_SLASH = /\\/g;
-var ESCAPED_SLASH_REPLACEMENT = '\\\\';
-var ESCAPED_QUOTE = /\"/g;
-var ESCAPED_QUOTE_REPLACEMENT = "\\\"";
+var ESCAPED_CHARACTERS = /(\\|\")/g;
+var REPLACEMENT_CHARACTERS = '\\$1';
 
 function printString(val) {
-  return (
-    '"' +
-    val
-      .replace(ESCAPED_SLASH, ESCAPED_SLASH_REPLACEMENT)
-      .replace(ESCAPED_QUOTE, ESCAPED_QUOTE_REPLACEMENT) +
-    '"'
-  );
+  return '"' + val.replace(ESCAPED_CHARACTERS, REPLACEMENT_CHARACTERS) + '"';
 }
 
 function printFunction(val) {
