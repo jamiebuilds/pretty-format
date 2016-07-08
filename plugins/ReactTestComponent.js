@@ -1,13 +1,11 @@
 var reactTestInstance = Symbol.for('react.test.json');
 
 function printChildren(children, print, indent) {
-  return children.map(function(child) {
-    return printElement(child, print, indent);
-  }).join('\n');
+  return children.map(child => printElement(child, print, indent)).join('\n');
 }
 
 function printProps(props, print, indent) {
-  return Object.keys(props).sort().map(function(name) {
+  return Object.keys(props).sort().map(name => {
     var prop = props[name];
     var printed = print(prop);
 
@@ -45,10 +43,10 @@ function printElement(element, print, indent) {
 }
 
 module.exports = {
-  test: function(object) {
+  test(object) {
     return object && object.$$typeof === reactTestInstance;
   },
-  print: function(val, print, indent) {
+  print(val, print, indent) {
     return printElement(val, print, indent);
   }
 };

@@ -9,9 +9,7 @@ var symbolToString = Symbol.prototype.toString;
 var SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
 var NEWLINE_REGEXP = /\n/ig;
 
-var getSymbols = Object.getOwnPropertySymbols || function(obj) {
-  return [];
-};
+var getSymbols = Object.getOwnPropertySymbols || (obj => []);
 
 function isToStringedArrayType(toStringed) {
   return (
@@ -162,9 +160,9 @@ function printObject(val, indent, prevIndent, refs, maxDepth, currentDepth, plug
   var symbols = getSymbols(val);
 
   if (symbols.length) {
-    keys = keys.filter(function(key) {
-      return !(typeof key === 'symbol' || toString.call(key) === '[object Symbol]');
-    }).concat(symbols);
+    keys = keys
+      .filter(key => !(typeof key === 'symbol' || toString.call(key) === '[object Symbol]'))
+      .concat(symbols);
   }
 
   if (keys.length) {
@@ -283,7 +281,7 @@ var DEFAULTS = {
 };
 
 function validateOptions(opts) {
-  Object.keys(opts).forEach(function(key) {
+  Object.keys(opts).forEach(key => {
     if (!DEFAULTS.hasOwnProperty(key)) {
       throw new Error('prettyFormat: Invalid option: ' + key);
     }
@@ -293,9 +291,9 @@ function validateOptions(opts) {
 function normalizeOptions(opts) {
   var result = {};
 
-  Object.keys(DEFAULTS).forEach(function(key) {
-    result[key] = opts.hasOwnProperty(key) ? opts[key] : DEFAULTS[key];
-  });
+  Object.keys(DEFAULTS).forEach(key =>
+    result[key] = opts.hasOwnProperty(key) ? opts[key] : DEFAULTS[key]
+  );
 
   return result;
 }
