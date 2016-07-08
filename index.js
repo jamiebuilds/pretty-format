@@ -1,5 +1,7 @@
 'use strict';
 
+var printString = require('./printString');
+
 var toString = Object.prototype.toString;
 var toISOString = Date.prototype.toISOString;
 var errorToString = Error.prototype.toString;
@@ -34,12 +36,7 @@ function printNumber(val) {
   return isNegativeZero ? '-0' : '' + val;
 }
 
-var ESCAPED_CHARACTERS = /(\\|\")/g;
-var REPLACEMENT_CHARACTERS = '\\$1';
 
-function printString(val) {
-  return '"' + val.replace(ESCAPED_CHARACTERS, REPLACEMENT_CHARACTERS) + '"';
-}
 
 function printFunction(val) {
   if (val.name === '') {
@@ -65,7 +62,7 @@ function printBasicValue(val) {
   var typeOf = typeof val;
 
   if (typeOf === 'number') return printNumber(val);
-  if (typeOf === 'string') return printString(val);
+  if (typeOf === 'string') return '"' + printString(val) + '"';
   if (typeOf === 'function') return printFunction(val);
   if (typeOf === 'symbol') return printSymbol(val);
 

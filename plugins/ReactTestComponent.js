@@ -1,3 +1,5 @@
+var printString = require('../printString');
+
 var reactTestInstance = Symbol.for('react.test.json');
 
 function printChildren(children, print, indent) {
@@ -23,7 +25,7 @@ function printProps(props, print, indent) {
 
 function printElement(element, print, indent) {
   if (typeof element === 'string') {
-    return element;
+    return printString(element);
   }
 
   var result = '<' + element.type;

@@ -328,6 +328,17 @@ describe('prettyFormat()', () => {
       );
     });
 
+    it('should escape children properly', () => {
+      assertPrintedJSX(
+        React.createElement('Mouse', null,
+          '\"-\"',
+          React.createElement('Mouse'),
+          '\\ \\\\'
+        ),
+        '<Mouse>\n  \\"-\\"\n  <Mouse />\n  \\\\ \\\\\\\\\n</Mouse>'
+      );
+    });
+
     it('should support everything all together', () => {
       assertPrintedJSX(
         React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: () => {} },
