@@ -144,46 +144,46 @@ describe('prettyFormat()', () => {
 
   it('should print an object with properties', () => {
     const val = { prop1: 'value1', prop2: 'value2' };
-    expect(prettyFormat(val), 'Object {\n  "prop1": "value1",\n  "prop2": "value2"\n}');
+    expect(prettyFormat(val)).toEqual('Object {\n  "prop1": "value1",\n  "prop2": "value2"\n}');
   });
 
   it('should print an object with properties and symbols', () => {
     const val = { prop: 'value1' };
     val[Symbol('symbol1')] = 'value2';
     val[Symbol('symbol2')] = 'value3';
-    expect(prettyFormat(val), 'Object {\n  "prop": "value1",\n  Symbol(symbol1): "value2",\n  Symbol(symbol2): "value3"\n}');
+    expect(prettyFormat(val)).toEqual('Object {\n  "prop": "value1",\n  Symbol(symbol1): "value2",\n  Symbol(symbol2): "value3"\n}');
   });
 
   it('should print an object with sorted properties', () => {
     const val = { b: 1, a: 2 };
-    expect(prettyFormat(val), 'Object {\n  "a": 2,\n  "b": 1\n}');
+    expect(prettyFormat(val)).toEqual('Object {\n  "a": 2,\n  "b": 1\n}');
   });
 
   it('should print regular expressions from constructors', () => {
     const val = new RegExp('regexp');
-    expect(prettyFormat(val), '/regexp/');
+    expect(prettyFormat(val)).toEqual('/regexp/');
   });
 
   it('should print regular expressions from literals', () => {
     const val = /regexp/ig;
-    expect(prettyFormat(val), '/regexp/gi');
+    expect(prettyFormat(val)).toEqual('/regexp/gi');
   });
 
   it('should print an empty set', () => {
     const val = new Set();
-    expect(prettyFormat(val), 'Set {}');
+    expect(prettyFormat(val)).toEqual('Set {}');
   });
 
   it('should print a set with values', () => {
     const val = new Set();
     val.add('value1');
     val.add('value2');
-    expect(prettyFormat(val), 'Set {\n  "value1",\n  "value2"\n}');
+    expect(prettyFormat(val)).toEqual('Set {\n  "value1",\n  "value2"\n}');
   });
 
   it('should print a string', () => {
     const val = 'string';
-    expect(prettyFormat(val), '"string"');
+    expect(prettyFormat(val)).toEqual('"string"');
   });
 
   it('should print a string with escapes', () => {
@@ -193,49 +193,49 @@ describe('prettyFormat()', () => {
 
   it('should print a symbol', () => {
     const val = Symbol('symbol');
-    expect(prettyFormat(val), 'Symbol(symbol)');
+    expect(prettyFormat(val)).toEqual('Symbol(symbol)');
   });
 
   it('should print undefined', () => {
     const val = undefined;
-    expect(prettyFormat(val), 'undefined');
+    expect(prettyFormat(val)).toEqual('undefined');
   });
 
   it('should print a WeakMap', () => {
     const val = new WeakMap();
-    expect(prettyFormat(val), 'WeakMap {}');
+    expect(prettyFormat(val)).toEqual('WeakMap {}');
   });
 
   it('should print a WeakSet', () => {
     const val = new WeakSet();
-    expect(prettyFormat(val), 'WeakSet {}');
+    expect(prettyFormat(val)).toEqual('WeakSet {}');
   });
 
   it('should print deeply nested objects', () => {
     const val = { prop: { prop: { prop: 'value' } } };
-    expect(prettyFormat(val), 'Object {\n  "prop": Object {\n    "prop": Object {\n      "prop": "value"\n    }\n  }\n}');
+    expect(prettyFormat(val)).toEqual('Object {\n  "prop": Object {\n    "prop": Object {\n      "prop": "value"\n    }\n  }\n}');
   });
 
   it('should print circular references', () => {
     const val = {};
     val.prop = val;
-    expect(prettyFormat(val), 'Object {\n  "prop": [Circular]\n}')
+    expect(prettyFormat(val)).toEqual('Object {\n  "prop": [Circular]\n}')
   });
 
   it('should print parallel references', () => {
     const inner = {};
     const val = { prop1: inner, prop2: inner };
-    expect(prettyFormat(val), 'Object {\n  "prop1": Object {},\n  "prop2": Object {}\n}')
+    expect(prettyFormat(val)).toEqual('Object {\n  "prop1": Object {},\n  "prop2": Object {}\n}')
   });
 
   it('should be able to customize indent', () => {
     const val = { prop: 'value' };
-    expect(prettyFormat(val, { indent: 4 }), 'Object {\n    "prop": "value"\n}');
+    expect(prettyFormat(val, { indent: 4 })).toEqual('Object {\n    "prop": "value"\n}');
   });
 
   it('should be able to customize the max depth', () => {
     const val = { prop: { prop: { prop: {} } } };
-    expect(prettyFormat(val, { maxDepth: 2 }), 'Object {\n  "prop": Object {\n    "prop": [Object]\n  }\n}');
+    expect(prettyFormat(val, { maxDepth: 2 })).toEqual('Object {\n  "prop": Object {\n    "prop": [Object]\n  }\n}');
   });
 
   it('should throw on invalid options', () => {
@@ -256,11 +256,27 @@ describe('prettyFormat()', () => {
           return 'class Foo'
         }
       }]
-    }), 'class Foo');
+    })).toEqual('class Foo');
+  });
+
+  it('should support plugins with deeply nested arrays (#24)', () => {
+    const val = [[1, 2], [3, 4]];
+    expect
+    expect(prettyFormat(val, {
+      plugins: [{
+        test(val) {
+          console.log(val);
+          return Array.isArray(val);
+        },
+        print(val, print) {
+          return val.map(item => print(item)).join(' - ');
+        }
+      }]
+    })).toEqual('1 - 2 - 3 - 4')
   });
 
   it('should print objects with no constructor', () => {
-    expect(prettyFormat(Object.create(null)), 'Object {}');
+    expect(prettyFormat(Object.create(null))).toEqual('Object {}');
   });
 
   describe('ReactTestComponent plugin', () => {

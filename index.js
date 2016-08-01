@@ -36,8 +36,6 @@ function printNumber(val) {
   return isNegativeZero ? '-0' : '' + val;
 }
 
-
-
 function printFunction(val) {
   if (val.name === '') {
     return '[Function anonymous]'
@@ -261,7 +259,13 @@ function printPlugin(val, indent, prevIndent, refs, maxDepth, currentDepth, plug
 }
 
 function print(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
-  return printBasicValue(val) || printComplexValue(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
+  const basic = printBasicValue(val);
+  if (basic) return basic;
+
+  const plugin = printPlugin(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
+  if (plugin) return plugin;
+
+  return printComplexValue(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
 }
 
 const DEFAULTS = {
