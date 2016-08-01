@@ -265,7 +265,6 @@ describe('prettyFormat()', () => {
     expect(prettyFormat(val, {
       plugins: [{
         test(val) {
-          console.log(val);
           return Array.isArray(val);
         },
         print(val, print) {
