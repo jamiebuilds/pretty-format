@@ -298,10 +298,17 @@ describe('prettyFormat()', () => {
       );
     });
 
-    it('should support a single element with no props or children', () => {
+    it('should support a single element with no props', () => {
       assertPrintedJSX(
         React.createElement('Mouse', null, 'Hello World'),
         '<Mouse>\n  Hello World\n</Mouse>'
+      );
+    });
+
+    it('should support a single element with number children', () => {
+      assertPrintedJSX(
+        React.createElement('Mouse', null, 4),
+        '<Mouse>\n  4\n</Mouse>'
       );
     });
 
@@ -309,6 +316,13 @@ describe('prettyFormat()', () => {
       assertPrintedJSX(
         React.createElement('Mouse', { style: 'color:red' }),
         '<Mouse\n  style="color:red" />'
+      );
+    });
+
+    it('should support props with numbers', () => {
+      assertPrintedJSX(
+        React.createElement('Mouse', { size: 5 }),
+        '<Mouse\n  size={5} />'
       );
     });
 

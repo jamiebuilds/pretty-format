@@ -26,7 +26,9 @@ function printProps(props, print, indent) {
 }
 
 function printElement(element, print, indent) {
-  if (typeof element === 'string') {
+  if (typeof element == 'number') {
+    return print(element);
+  } else if (typeof element === 'string') {
     return printString(element);
   }
 
