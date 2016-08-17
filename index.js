@@ -202,10 +202,7 @@ function printSet(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins
 }
 
 function printComplexValue(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
-  const toStringed = toString.call(val);
-
   refs = refs.slice();
-
   if (refs.indexOf(val) > -1) {
     return '[Circular]';
   } else {
@@ -216,6 +213,11 @@ function printComplexValue(val, indent, prevIndent, refs, maxDepth, currentDepth
 
   const hitMaxDepth = currentDepth > maxDepth;
 
+  if (!hitMaxDepth && val.toJSON && typeof val.toJSON === 'function') {
+    return print(val.toJSON(), indent, prevIndent, refs, maxDepth, currentDepth, plugins);
+  }
+
+  const toStringed = toString.call(val);
   if (toStringed === '[object Arguments]') {
     return hitMaxDepth ? '[Arguments]' : printArguments(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins);
   } else if (isToStringedArrayType(toStringed)) {
