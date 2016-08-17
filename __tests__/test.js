@@ -278,6 +278,40 @@ describe('prettyFormat()', () => {
     expect(prettyFormat(Object.create(null))).toEqual('Object {}');
   });
 
+  it('calls toJSON and prints its return value', () => {
+    expect(prettyFormat({
+      value: true,
+      toJSON: () => ({value: false}),
+    })).toEqual('Object {\n  "value": false\n}');
+  });
+
+  it('calls toJSON and prints an internal representation.', () => {
+    expect(prettyFormat({
+      value: true,
+      toJSON: () => '[Internal Object]',
+    })).toEqual('"[Internal Object]"');
+  });
+
+  it('calls toJSON only on functions', () => {
+    expect(prettyFormat({
+      toJSON: false,
+      value: true,
+    })).toEqual('Object {\n  "toJSON": false,\n  "value": true\n}');
+  });
+
+  it('calls toJSON recursively', () => {
+    expect(prettyFormat({
+      value: false,
+      toJSON: () => ({toJSON: () => ({value: true})}),
+    })).toEqual('Object {\n  "value": true\n}');
+  });
+
+  it('calls toJSON on Sets.', () => {
+    const set = new Set([1]);
+    set.toJSON = () => 'map';
+    expect(prettyFormat(set)).toEqual('"map"');
+  });
+
   describe('ReactTestComponent plugin', () => {
     const Mouse = React.createClass({
       getInitialState: () => {
