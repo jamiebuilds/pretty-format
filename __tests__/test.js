@@ -3,8 +3,8 @@
 const prettyFormat = require('../');
 
 const React = require('react');
-const ReactTestComponent = require('../plugins/ReactTestComponent');
-const renderer = require('react/lib/ReactTestRenderer');
+const ReactComponent = require('../plugins/ReactComponent');
+const renderer = require('react-test-renderer');
 
 function returnArguments() {
   return arguments;
@@ -13,7 +13,7 @@ function returnArguments() {
 function assertPrintedJSX(actual, expected) {
   expect(
     prettyFormat(renderer.create(actual).toJSON(), {
-      plugins: [ReactTestComponent]
+      plugins: [ReactComponent]
     })
   ).toEqual(expected);
 }
@@ -312,7 +312,7 @@ describe('prettyFormat()', () => {
     expect(prettyFormat(set)).toEqual('"map"');
   });
 
-  describe('ReactTestComponent plugin', () => {
+  describe('ReactComponent plugin', () => {
     const Mouse = React.createClass({
       getInitialState: () => {
         return { mouse: 'mouse' };
@@ -439,6 +439,57 @@ describe('prettyFormat()', () => {
           )
         ),
         '<Mouse\n  abc={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  zeus="kentaromiura watched me fix this">\n  <Mouse\n    acbd={\n      Object {\n        "one": "1",\n        "two": 2\n      }\n    }\n    xyz={123}>\n    NESTED\n  </Mouse>\n</Mouse>'
+      );
+    });
+
+    it('should support a single element with React elements as props', () => {
+      assertPrintedJSX(
+        React.createElement('Mouse', {
+          prop: React.createElement('div')
+        }),
+        '<Mouse\n  prop={<div />} />'
+      );
+    });
+
+    it('should support a single element with React elements with props', () => {
+      assertPrintedJSX(
+        React.createElement('Mouse', {
+          prop: React.createElement('div', {foo: 'bar'})
+        }),
+        '<Mouse\n  prop={\n    <div\n      foo="bar" />\n  } />'
+      );
+    });
+
+    it('should support a single element with React elements with a child', () => {
+      assertPrintedJSX(
+        React.createElement('Mouse', {
+          prop: React.createElement('div', null, 'mouse')
+        }),
+        '<Mouse\n  prop={\n    <div>\n      mouse\n    </div>\n  } />'
+      );
+    });
+
+    it('should support a single element with React elements with children', () => {
+      assertPrintedJSX(
+        React.createElement('Mouse', {
+          prop: React.createElement('div', null, 'mouse', React.createElement('span', null, 'rat'))
+        }),
+        '<Mouse\n  prop={\n    <div>\n      mouse\n      <span>\n        rat\n      </span>\n    </div>\n  } />'
+      );
+    });
+
+    it('should support a single element with React elements with array children', () => {
+      assertPrintedJSX(
+        React.createElement('Mouse', {
+          prop: React.createElement('div', null,
+            'mouse',
+            [
+              React.createElement('span', {key: 1}, 'rat'),
+              React.createElement('span', {key: 2}, 'cat'),
+            ]
+          )
+        }),
+        '<Mouse\n  prop={\n    <div>\n      mouse\n      <span>\n        rat\n      </span>\n      <span>\n        cat\n      </span>\n    </div>\n  } />'
       );
     });
   });
