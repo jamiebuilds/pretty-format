@@ -3,9 +3,12 @@
 const printString = require('../printString');
 
 const reactTestInstance = Symbol.for('react.test.json');
+const reactInstance = Symbol.for('react.element');
 
 function printChildren(children, print, indent) {
-  return children.map(child => printElement(child, print, indent)).join('\n');
+  return Array.isArray(children)
+    ? children.map(child => printChildren(child, print, indent)).join('\n')
+    : printElement(children, print, indent);
 }
 
 function printProps(props, print, indent) {
@@ -35,12 +38,15 @@ function printElement(element, print, indent) {
   let result = '<' + element.type;
 
   if (element.props) {
-    result += printProps(element.props, print, indent);
+    const props = Object.assign({}, element.props);
+    delete props.children;
+    result += printProps(props, print, indent);
   }
 
-  if (element.children) {
-    const children = printChildren(element.children, print, indent);
-    result += '>\n' + indent(children) + '\n</' + element.type + '>';
+  let children = element.children || element.props.children;
+  if (children) {
+    const printedChildren = printChildren(children, print, indent);
+    result += '>\n' + indent(printedChildren) + '\n</' + element.type + '>';
   } else {
     result += ' />';
   }
@@ -50,7 +56,13 @@ function printElement(element, print, indent) {
 
 module.exports = {
   test(object) {
-    return object && object.$$typeof === reactTestInstance;
+    return (
+      object &&
+      (
+        object.$$typeof === reactInstance ||
+        object.$$typeof === reactTestInstance
+      )
+    );
   },
   print(val, print, indent) {
     return printElement(val, print, indent);
