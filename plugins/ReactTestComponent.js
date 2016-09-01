@@ -5,7 +5,7 @@ const printString = require('../printString');
 const reactTestInstance = Symbol.for('react.test.json');
 
 function printChildren(children, print, indent) {
-  return children.map(child => printElement(child, print, indent)).join('\n');
+  return children.map(child => printInstance(child, print, indent)).join('\n');
 }
 
 function printProps(props, print, indent) {
@@ -25,22 +25,22 @@ function printProps(props, print, indent) {
   }).join('');
 }
 
-function printElement(element, print, indent) {
-  if (typeof element == 'number') {
-    return print(element);
-  } else if (typeof element === 'string') {
-    return printString(element);
+function printInstance(instance, print, indent) {
+  if (typeof instance == 'number') {
+    return print(instance);
+  } else if (typeof instance === 'string') {
+    return printString(instance);
   }
 
-  let result = '<' + element.type;
+  let result = '<' + instance.type;
 
-  if (element.props) {
-    result += printProps(element.props, print, indent);
+  if (instance.props) {
+    result += printProps(instance.props, print, indent);
   }
 
-  if (element.children) {
-    const children = printChildren(element.children, print, indent);
-    result += '>\n' + indent(children) + '\n</' + element.type + '>';
+  if (instance.children) {
+    const children = printChildren(instance.children, print, indent);
+    result += '>\n' + indent(children) + '\n</' + instance.type + '>';
   } else {
     result += ' />';
   }
@@ -53,6 +53,6 @@ module.exports = {
     return object && object.$$typeof === reactTestInstance;
   },
   print(val, print, indent) {
-    return printElement(val, print, indent);
+    return printInstance(val, print, indent);
   }
 };
