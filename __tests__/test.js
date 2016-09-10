@@ -172,7 +172,7 @@ describe('prettyFormat()', () => {
       }
       bar() {}
     };
-    expect(prettyFormat(val)).toEqual('Foo {\n  "abc": 123,\n  "bar": [Function bar]\n}');
+    expect(prettyFormat(val)).toEqual('Foo {\n  "abc": 123,\n  bar() {}\n}');
   });
 
   it('should print a class instance with symbol properties', () => {
@@ -183,7 +183,7 @@ describe('prettyFormat()', () => {
       [Symbol('foo')]() {}
       bar() {}
     };
-    expect(prettyFormat(val)).toEqual('Foo {\n  "bar": [Function bar],\n  Symbol(bar): "abc",\n  Symbol(foo): [Function anonymous]\n}');
+    expect(prettyFormat(val)).toEqual('Foo {\n  bar() {},\n  [Symbol(bar)]: "abc",\n  [Symbol(foo)]() {}\n}');
   });
 
   it('should print regular expressions from constructors', () => {
