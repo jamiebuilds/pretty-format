@@ -141,10 +141,21 @@ function printMap(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins
 }
 
 function printObject(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {
+  const isClass = typeof val.constructor === 'function'
+    && /^class\s/.test(Function.prototype.toString.call(val.constructor));
+
   const constructor = val.constructor ?  val.constructor.name + ' ' : 'Object ';
   let result = constructor + '{';
   let keys = Object.keys(val).sort();
-  const symbols = getSymbols(val);
+  let symbols = getSymbols(val);
+
+  if (isClass) {
+    const proto = Object.getPrototypeOf(val);
+    const classMethods = Object.getOwnPropertyNames(proto).filter(p => p !== 'constructor');
+
+    keys = keys.concat(classMethods);
+    symbols = symbols.concat(getSymbols(proto));
+  }
 
   if (symbols.length) {
     keys = keys
@@ -162,7 +173,11 @@ function printObject(val, indent, prevIndent, refs, maxDepth, currentDepth, plug
       const name = print(key, indent, innerIndent, refs, maxDepth, currentDepth, plugins);
       const value = print(val[key], indent, innerIndent, refs, maxDepth, currentDepth, plugins);
 
-      result += innerIndent + name + ': ' + value;
+      if (isClass) {
+        result += innerIndent + printClassProperty(key, val[key], name, value);
+      } else {
+        result += innerIndent + name + ': ' + value;
+      }
 
       if (i < keys.length - 1) {
         result += ',\n';
@@ -173,6 +188,26 @@ function printObject(val, indent, prevIndent, refs, maxDepth, currentDepth, plug
   }
 
   return result + '}';
+}
+
+function printClassProperty(key, value, printedKey, printedValue) {
+  let result;
+
+  if (typeof key === 'string' && typeof value === 'function') {
+    result = key;
+  } else if (typeof key === 'symbol') {
+    result = '[' + printedKey + ']';
+  } else {
+    result = printedKey;
+  }
+
+  if (typeof value === 'function') {
+    result += '() {}';
+  } else {
+    result += ': ' + printedValue;
+  }
+
+  return result;
 }
 
 function printSet(val, indent, prevIndent, refs, maxDepth, currentDepth, plugins) {

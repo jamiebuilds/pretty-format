@@ -165,6 +165,27 @@ describe('prettyFormat()', () => {
     expect(prettyFormat(val)).toEqual('Object {\n  "a": 2,\n  "b": 1\n}');
   });
 
+  it('should print a class instance', () => {
+    const val = new class Foo {
+      constructor() {
+        this.abc = 123;
+      }
+      bar() {}
+    };
+    expect(prettyFormat(val)).toEqual('Foo {\n  "abc": 123,\n  bar() {}\n}');
+  });
+
+  it('should print a class instance with symbol properties', () => {
+    const val = new class Foo {
+      constructor() {
+        this[Symbol('bar')] = 'abc';
+      }
+      [Symbol('foo')]() {}
+      bar() {}
+    };
+    expect(prettyFormat(val)).toEqual('Foo {\n  bar() {},\n  [Symbol(bar)]: "abc",\n  [Symbol(foo)]() {}\n}');
+  });
+
   it('should print regular expressions from constructors', () => {
     const val = new RegExp('regexp');
     expect(prettyFormat(val)).toEqual('/regexp/');
