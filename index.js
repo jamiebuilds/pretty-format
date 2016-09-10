@@ -12,6 +12,7 @@ const SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
 const NEWLINE_REGEXP = /\n/ig;
 
 const getSymbols = Object.getOwnPropertySymbols || (obj => []);
+const isClass = func => typeof func === 'function' && /^class\s/.test(Function.prototype.toString.call(func));
 
 function isToStringedArrayType(toStringed) {
   return (
@@ -144,7 +145,15 @@ function printObject(val, indent, prevIndent, refs, maxDepth, currentDepth, plug
   const constructor = val.constructor ?  val.constructor.name + ' ' : 'Object ';
   let result = constructor + '{';
   let keys = Object.keys(val).sort();
-  const symbols = getSymbols(val);
+  let symbols = getSymbols(val);
+
+  if (isClass(val.constructor)) {
+    const proto = Object.getPrototypeOf(val);
+    const classMethods = Object.getOwnPropertyNames(proto).filter(p => p !== 'constructor');
+
+    keys = keys.concat(classMethods);
+    symbols = symbols.concat(getSymbols(proto));
+  }
 
   if (symbols.length) {
     keys = keys
