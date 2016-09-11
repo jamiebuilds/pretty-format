@@ -32,7 +32,7 @@ describe('prettyFormat()', () => {
 
   it('should print arguments', () => {
     const val = returnArguments(1, 2, 3);
-    expect(prettyFormat(val)).toEqual('Arguments [\n  1,\n  2,\n  3\n]');
+    expect(prettyFormat(val)).toEqual('Arguments [\n  1,\n  2,\n  3,\n]');
   });
 
   it('should print an empty array', () => {
@@ -42,12 +42,12 @@ describe('prettyFormat()', () => {
 
   it('should print an array with items', () => {
     const val = [1, 2, 3];
-    expect(prettyFormat(val)).toEqual('Array [\n  1,\n  2,\n  3\n]');
+    expect(prettyFormat(val)).toEqual('Array [\n  1,\n  2,\n  3,\n]');
   });
 
   it('should print a typed array', () => {
     const val = new Uint32Array(3);
-    expect(prettyFormat(val)).toEqual('Uint32Array [\n  0,\n  0,\n  0\n]');
+    expect(prettyFormat(val)).toEqual('Uint32Array [\n  0,\n  0,\n  0,\n]');
   });
 
   it('should print an array buffer', () => {
@@ -57,7 +57,7 @@ describe('prettyFormat()', () => {
 
   it('should print a nested array', () => {
     const val = [[1, 2, 3]];
-    expect(prettyFormat(val)).toEqual('Array [\n  Array [\n    1,\n    2,\n    3\n  ]\n]');
+    expect(prettyFormat(val)).toEqual('Array [\n  Array [\n    1,\n    2,\n    3,\n  ],\n]');
   });
 
   it('should print true', () => {
@@ -114,13 +114,13 @@ describe('prettyFormat()', () => {
     const val = new Map();
     val.set('prop1', 'value1');
     val.set('prop2', 'value2');
-    expect(prettyFormat(val)).toEqual('Map {\n  "prop1" => "value1",\n  "prop2" => "value2"\n}');
+    expect(prettyFormat(val)).toEqual('Map {\n  "prop1" => "value1",\n  "prop2" => "value2",\n}');
   });
 
   it('should print a map with non-string keys', () => {
     const val = new Map();
     val.set({ prop: 'value' }, { prop: 'value' });
-    expect(prettyFormat(val)).toEqual('Map {\n  Object {\n    "prop": "value"\n  } => Object {\n    "prop": "value"\n  }\n}');
+    expect(prettyFormat(val)).toEqual('Map {\n  Object {\n    "prop": "value",\n  } => Object {\n    "prop": "value",\n  },\n}');
   });
 
   it('should print NaN', () => {
@@ -150,19 +150,19 @@ describe('prettyFormat()', () => {
 
   it('should print an object with properties', () => {
     const val = { prop1: 'value1', prop2: 'value2' };
-    expect(prettyFormat(val)).toEqual('Object {\n  "prop1": "value1",\n  "prop2": "value2"\n}');
+    expect(prettyFormat(val)).toEqual('Object {\n  "prop1": "value1",\n  "prop2": "value2",\n}');
   });
 
   it('should print an object with properties and symbols', () => {
     const val = { prop: 'value1' };
     val[Symbol('symbol1')] = 'value2';
     val[Symbol('symbol2')] = 'value3';
-    expect(prettyFormat(val)).toEqual('Object {\n  "prop": "value1",\n  Symbol(symbol1): "value2",\n  Symbol(symbol2): "value3"\n}');
+    expect(prettyFormat(val)).toEqual('Object {\n  "prop": "value1",\n  Symbol(symbol1): "value2",\n  Symbol(symbol2): "value3",\n}');
   });
 
   it('should print an object with sorted properties', () => {
     const val = { b: 1, a: 2 };
-    expect(prettyFormat(val)).toEqual('Object {\n  "a": 2,\n  "b": 1\n}');
+    expect(prettyFormat(val)).toEqual('Object {\n  "a": 2,\n  "b": 1,\n}');
   });
 
   it('should print regular expressions from constructors', () => {
@@ -184,7 +184,7 @@ describe('prettyFormat()', () => {
     const val = new Set();
     val.add('value1');
     val.add('value2');
-    expect(prettyFormat(val)).toEqual('Set {\n  "value1",\n  "value2"\n}');
+    expect(prettyFormat(val)).toEqual('Set {\n  "value1",\n  "value2",\n}');
   });
 
   it('should print a string', () => {
@@ -219,29 +219,29 @@ describe('prettyFormat()', () => {
 
   it('should print deeply nested objects', () => {
     const val = { prop: { prop: { prop: 'value' } } };
-    expect(prettyFormat(val)).toEqual('Object {\n  "prop": Object {\n    "prop": Object {\n      "prop": "value"\n    }\n  }\n}');
+    expect(prettyFormat(val)).toEqual('Object {\n  "prop": Object {\n    "prop": Object {\n      "prop": "value",\n    },\n  },\n}');
   });
 
   it('should print circular references', () => {
     const val = {};
     val.prop = val;
-    expect(prettyFormat(val)).toEqual('Object {\n  "prop": [Circular]\n}')
+    expect(prettyFormat(val)).toEqual('Object {\n  "prop": [Circular],\n}')
   });
 
   it('should print parallel references', () => {
     const inner = {};
     const val = { prop1: inner, prop2: inner };
-    expect(prettyFormat(val)).toEqual('Object {\n  "prop1": Object {},\n  "prop2": Object {}\n}')
+    expect(prettyFormat(val)).toEqual('Object {\n  "prop1": Object {},\n  "prop2": Object {},\n}')
   });
 
   it('should be able to customize indent', () => {
     const val = { prop: 'value' };
-    expect(prettyFormat(val, { indent: 4 })).toEqual('Object {\n    "prop": "value"\n}');
+    expect(prettyFormat(val, { indent: 4 })).toEqual('Object {\n    "prop": "value",\n}');
   });
 
   it('should be able to customize the max depth', () => {
     const val = { prop: { prop: { prop: {} } } };
-    expect(prettyFormat(val, { maxDepth: 2 })).toEqual('Object {\n  "prop": Object {\n    "prop": [Object]\n  }\n}');
+    expect(prettyFormat(val, { maxDepth: 2 })).toEqual('Object {\n  "prop": Object {\n    "prop": [Object],\n  },\n}');
   });
 
   it('should throw on invalid options', () => {
@@ -288,7 +288,7 @@ describe('prettyFormat()', () => {
     expect(prettyFormat({
       value: true,
       toJSON: () => ({value: false}),
-    })).toEqual('Object {\n  "value": false\n}');
+    })).toEqual('Object {\n  "value": false,\n}');
   });
 
   it('calls toJSON and prints an internal representation.', () => {
@@ -302,14 +302,14 @@ describe('prettyFormat()', () => {
     expect(prettyFormat({
       toJSON: false,
       value: true,
-    })).toEqual('Object {\n  "toJSON": false,\n  "value": true\n}');
+    })).toEqual('Object {\n  "toJSON": false,\n  "value": true,\n}');
   });
 
   it('calls toJSON recursively', () => {
     expect(prettyFormat({
       value: false,
       toJSON: () => ({toJSON: () => ({value: true})}),
-    })).toEqual('Object {\n  "value": true\n}');
+    })).toEqual('Object {\n  "value": true,\n}');
   });
 
   it('calls toJSON on Sets.', () => {
@@ -400,7 +400,7 @@ describe('prettyFormat()', () => {
     it('should support a single element with a object prop', () => {
       assertPrintedJSX(
         React.createElement('Mouse', { customProp: { one: '1', two: 2 } }),
-        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  } />'
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2,\n    }\n  } />'
       );
     });
 
@@ -409,7 +409,7 @@ describe('prettyFormat()', () => {
         React.createElement('Mouse', { customProp: { one: '1', two: 2 } },
           React.createElement('Mouse')
         ),
-        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }>\n  <Mouse />\n</Mouse>'
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2,\n    }\n  }>\n  <Mouse />\n</Mouse>'
       );
     });
 
@@ -419,7 +419,7 @@ describe('prettyFormat()', () => {
           'HELLO',
           React.createElement('Mouse'), 'CIAO'
         ),
-        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={[Function anonymous]}>\n  HELLO\n  <Mouse />\n  CIAO\n</Mouse>'
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2,\n    }\n  }\n  onclick={[Function anonymous]}>\n  HELLO\n  <Mouse />\n  CIAO\n</Mouse>'
       );
     });
 
@@ -445,7 +445,7 @@ describe('prettyFormat()', () => {
           ),
           'CIAO'
         ),
-        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  onclick={[Function anonymous]}>\n  HELLO\n  <Mouse\n    customProp={\n      Object {\n        "one": "1",\n        "two": 2\n      }\n    }\n    onclick={[Function anonymous]}>\n    HELLO\n    <Mouse />\n    CIAO\n  </Mouse>\n  CIAO\n</Mouse>'
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2,\n    }\n  }\n  onclick={[Function anonymous]}>\n  HELLO\n  <Mouse\n    customProp={\n      Object {\n        "one": "1",\n        "two": 2,\n      }\n    }\n    onclick={[Function anonymous]}>\n    HELLO\n    <Mouse />\n    CIAO\n  </Mouse>\n  CIAO\n</Mouse>'
       );
     });
 
@@ -468,7 +468,7 @@ describe('prettyFormat()', () => {
             'NESTED'
           )
         ),
-        '<Mouse\n  abc={\n    Object {\n      "one": "1",\n      "two": 2\n    }\n  }\n  zeus="kentaromiura watched me fix this">\n  <Mouse\n    acbd={\n      Object {\n        "one": "1",\n        "two": 2\n      }\n    }\n    xyz={123}>\n    NESTED\n  </Mouse>\n</Mouse>'
+        '<Mouse\n  abc={\n    Object {\n      "one": "1",\n      "two": 2,\n    }\n  }\n  zeus="kentaromiura watched me fix this">\n  <Mouse\n    acbd={\n      Object {\n        "one": "1",\n        "two": 2,\n      }\n    }\n    xyz={123}>\n    NESTED\n  </Mouse>\n</Mouse>'
       );
     });
 
