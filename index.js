@@ -97,7 +97,7 @@ function printList(list, indent, prevIndent, spacing, edgeSpacing, refs, maxDept
       }
     }
 
-    body += edgeSpacing + prevIndent;
+    body += (min ? '' : ',') + edgeSpacing + prevIndent;
   }
 
   return '[' + body + ']';
@@ -134,7 +134,7 @@ function printMap(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth,
       }
     }
 
-    result += edgeSpacing + prevIndent;
+    result += (min ? '' : ',') + edgeSpacing + prevIndent;
   }
 
   return result + '}';
@@ -169,7 +169,7 @@ function printObject(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDep
       }
     }
 
-    result += edgeSpacing + prevIndent;
+    result += (min ? '' : ',') + edgeSpacing + prevIndent;
   }
 
   return result + '}';
@@ -195,7 +195,7 @@ function printSet(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth,
       }
     }
 
-    result += edgeSpacing + prevIndent;
+    result += (min ? '' : ',') + edgeSpacing + prevIndent;
   }
 
   return result + '}';
