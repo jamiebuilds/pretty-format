@@ -11,16 +11,16 @@ function returnArguments() {
   return arguments;
 }
 
-function assertPrintedJSX(actual, expected) {
+function assertPrintedJSX(actual, expected, opts) {
   expect(
-    prettyFormat(actual, {
+    prettyFormat(actual, Object.assign({
       plugins: [ReactElement]
-    })
+    }, opts))
   ).toEqual(expected);
   expect(
-    prettyFormat(renderer.create(actual).toJSON(), {
+    prettyFormat(renderer.create(actual).toJSON(), Object.assign({
       plugins: [ReactTestComponent, ReactElement]
-    })
+    }, opts))
   ).toEqual(expected);
 }
 
@@ -318,6 +318,21 @@ describe('prettyFormat()', () => {
     expect(prettyFormat(set)).toEqual('"map"');
   });
 
+  describe('min', () => {
+    it('should print in min mode', () => {
+      const val = { prop: [1, 2, Infinity, new Set([1, 2, 3])] };
+      expect(prettyFormat(val, {
+        min: true
+      })).toEqual('{"prop": [1, 2, Infinity, Set {1, 2, 3}]}')
+    });
+
+    it('should not allow indent !== 0 in min mode', () => {
+      expect(() => {
+        prettyFormat(1, { min: true, indent: 1 });
+      }).toThrow();
+    });
+  });
+
   describe('ReactTestComponent and ReactElement plugins', () => {
     const Mouse = React.createClass({
       getInitialState: () => {
@@ -506,6 +521,22 @@ describe('prettyFormat()', () => {
         }),
         '<Mouse\n  prop={\n    <div>\n      mouse\n      <span>\n        rat\n      </span>\n      <span>\n        cat\n      </span>\n    </div>\n  } />'
       );
+    });
+
+    it('it should use the supplied line seperator for min mode', () => {
+      assertPrintedJSX(
+        React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: () => {} },
+          'HELLO',
+          React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: () => {} },
+            'HELLO',
+            React.createElement('Mouse'),
+            'CIAO'
+          ),
+          'CIAO'
+        ),
+        '<Mouse customProp={{"one": "1", "two": 2}} onclick={[Function anonymous]}>HELLO<Mouse customProp={{"one": "1", "two": 2}} onclick={[Function anonymous]}>HELLO<Mouse />CIAO</Mouse>CIAO</Mouse>',
+        { min: true }
+      )
     });
   });
 });

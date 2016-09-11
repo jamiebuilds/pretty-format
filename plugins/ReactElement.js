@@ -12,19 +12,19 @@ function traverseChildren(opaqueChildren, cb) {
   }
 }
 
-function printChildren(flatChildren, print, indent) {
+function printChildren(flatChildren, print, indent, opts) {
   return flatChildren.map(node => {
     if (typeof node === 'object') {
-      return printElement(node, print, indent);
+      return printElement(node, print, indent, opts);
     } else if (typeof node === 'string') {
       return printString(node);
     } else {
       return print(node);
     }
-  }).join('\n');
+  }).join(opts.edgeSpacing);
 }
 
-function printProps(props, print, indent) {
+function printProps(props, print, indent, opts) {
   return Object.keys(props).sort().map(name => {
     if (name === 'children') {
       return '';
@@ -35,19 +35,19 @@ function printProps(props, print, indent) {
 
     if (typeof prop !== 'string') {
       if (printed.indexOf('\n') !== -1) {
-        printed = '{\n' + indent(indent(printed) + '\n}');
+        printed = '{' + opts.edgeSpacing + indent(indent(printed) + opts.edgeSpacing + '}');
       } else {
         printed = '{' + printed + '}';
       }
     }
 
-    return '\n' + indent(name + '=') + printed;
+    return opts.spacing + indent(name + '=') + printed;
   }).join('');
 }
 
-function printElement(element, print, indent) {
+function printElement(element, print, indent, opts) {
   let result = '<' + element.type;
-  result += printProps(element.props, print, indent);
+  result += printProps(element.props, print, indent, opts);
 
   const opaqueChildren = element.props.children;
   if (opaqueChildren) {
@@ -55,8 +55,8 @@ function printElement(element, print, indent) {
     traverseChildren(opaqueChildren, child => {
       flatChildren.push(child);
     });
-    const children = printChildren(flatChildren, print, indent);
-    result += '>\n' + indent(children) + '\n</' + element.type + '>';
+    const children = printChildren(flatChildren, print, indent, opts);
+    result += '>' + opts.edgeSpacing + indent(children) + opts.edgeSpacing + '</' + element.type + '>';
   } else {
     result += ' />';
   }
@@ -68,7 +68,7 @@ module.exports = {
   test(object) {
     return object && object.$$typeof === reactElement;
   },
-  print(val, print, indent) {
-    return printElement(val, print, indent);
+  print(val, print, indent, opts) {
+    return printElement(val, print, indent, opts);
   }
 };
