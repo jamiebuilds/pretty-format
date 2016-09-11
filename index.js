@@ -117,7 +117,7 @@ function printMap(val, indent, prevIndent, lineSeparator, refs, maxDepth, curren
   let current = iterator.next();
 
   if (!current.done) {
-    result += '\n';
+    result += lineSeparator;
 
     const innerIndent = prevIndent + indent;
 
@@ -153,7 +153,7 @@ function printObject(val, indent, prevIndent, lineSeparator, refs, maxDepth, cur
   }
 
   if (keys.length) {
-    result += '\n';
+    result += lineSeparator;
 
     const innerIndent = prevIndent + indent;
 
