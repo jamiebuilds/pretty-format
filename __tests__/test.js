@@ -12,7 +12,6 @@ function returnArguments() {
 }
 
 function assertPrintedJSX(actual, expected, opts) {
-  console.log(opts);
   expect(
     prettyFormat(actual, Object.assign({
       plugins: [ReactElement]
@@ -324,7 +323,7 @@ describe('prettyFormat()', () => {
       const val = { prop: [1, 2, Infinity, new Set([1, 2, 3])] };
       expect(prettyFormat(val, {
         min: true
-      })).toEqual('Object { "prop": Array [ 1, 2, Infinity, Set { 1, 2, 3 } ] }')
+      })).toEqual('{"prop": [1, 2, Infinity, Set {1, 2, 3}]}')
     });
 
     it('should not allow indent !== 0 in min mode', () => {
@@ -524,7 +523,7 @@ describe('prettyFormat()', () => {
       );
     });
 
-    fit('it should use the supplied line seperator for min mode', () => {
+    it('it should use the supplied line seperator for min mode', () => {
       assertPrintedJSX(
         React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: () => {} },
           'HELLO',
@@ -535,7 +534,7 @@ describe('prettyFormat()', () => {
           ),
           'CIAO'
         ),
-        '<Mouse customProp={Object { "one": "1", "two": 2 }} onclick={[Function anonymous]}> HELLO <Mouse customProp={Object { "one": "1", "two": 2 }} onclick={[Function anonymous]}> HELLO <Mouse /> CIAO </Mouse> CIAO </Mouse>',
+        '<Mouse customProp={{"one": "1", "two": 2}} onclick={[Function anonymous]}>HELLO<Mouse customProp={{"one": "1", "two": 2}} onclick={[Function anonymous]}>HELLO<Mouse />CIAO</Mouse>CIAO</Mouse>',
         { min: true }
       )
     });

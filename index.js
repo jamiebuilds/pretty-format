@@ -68,7 +68,7 @@ function printBasicValue(val) {
 
   if (toStringed === '[object WeakMap]') return 'WeakMap {}';
   if (toStringed === '[object WeakSet]') return 'WeakSet {}';
-  if (toStringed === '[object Function]' || toStringed === '[object GeneratorFunction]') return printFunction(val);
+  if (toStringed === '[object Function]' || toStringed === '[object GeneratorFunction]') return printFunction(val, min);
   if (toStringed === '[object Symbol]') return printSymbol(val);
   if (toStringed === '[object Date]') return toISOString.call(val);
   if (toStringed === '[object Error]') return printError(val);
@@ -81,67 +81,67 @@ function printBasicValue(val) {
   return false;
 }
 
-function printList(list, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins) {
+function printList(list, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min) {
   let body = '';
 
   if (list.length) {
-    body += lineSeparator;
+    body += edgeSpacing;
 
     const innerIndent = prevIndent + indent;
 
     for (let i = 0; i < list.length; i++) {
-      body += innerIndent + print(list[i], indent, innerIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+      body += innerIndent + print(list[i], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
 
       if (i < list.length - 1) {
-        body += ',' + lineSeparator;
+        body += ',' + spacing;
       }
     }
 
-    body += lineSeparator + prevIndent;
+    body += edgeSpacing + prevIndent;
   }
 
   return '[' + body + ']';
 }
 
-function printArguments(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins) {
-  return 'Arguments ' + printList(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+function printArguments(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min) {
+  return (min ? '' : 'Arguments ') + printList(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
 }
 
-function printArray(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins) {
-  return val.constructor.name + ' ' + printList(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+function printArray(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min) {
+  return (min ? '' : val.constructor.name + ' ') + printList(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
 }
 
-function printMap(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins) {
+function printMap(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min) {
   let result = 'Map {';
   const iterator = val.entries();
   let current = iterator.next();
 
   if (!current.done) {
-    result += lineSeparator;
+    result += edgeSpacing;
 
     const innerIndent = prevIndent + indent;
 
     while (!current.done) {
-      const key = print(current.value[0], indent, innerIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
-      const value = print(current.value[1], indent, innerIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+      const key = print(current.value[0], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
+      const value = print(current.value[1], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
 
       result += innerIndent + key + ' => ' + value;
 
       current = iterator.next();
 
       if (!current.done) {
-        result += ',' + lineSeparator;
+        result += ',' + spacing;
       }
     }
 
-    result += lineSeparator + prevIndent;
+    result += edgeSpacing + prevIndent;
   }
 
   return result + '}';
 }
 
-function printObject(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins) {
-  const constructor = val.constructor ?  val.constructor.name + ' ' : 'Object ';
+function printObject(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min) {
+  const constructor = min ? '' : (val.constructor ?  val.constructor.name + ' ' : 'Object ');
   let result = constructor + '{';
   let keys = Object.keys(val).sort();
   const symbols = getSymbols(val);
@@ -153,55 +153,55 @@ function printObject(val, indent, prevIndent, lineSeparator, refs, maxDepth, cur
   }
 
   if (keys.length) {
-    result += lineSeparator;
+    result += edgeSpacing;
 
     const innerIndent = prevIndent + indent;
 
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
-      const name = print(key, indent, innerIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
-      const value = print(val[key], indent, innerIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+      const name = print(key, indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
+      const value = print(val[key], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
 
       result += innerIndent + name + ': ' + value;
 
       if (i < keys.length - 1) {
-        result += ',' + lineSeparator;
+        result += ',' + spacing;
       }
     }
 
-    result += lineSeparator + prevIndent;
+    result += edgeSpacing + prevIndent;
   }
 
   return result + '}';
 }
 
-function printSet(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins) {
+function printSet(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min) {
   let result = 'Set {';
   const iterator = val.entries();
   let current = iterator.next();
 
   if (!current.done) {
-    result += lineSeparator;
+    result += edgeSpacing;
 
     const innerIndent = prevIndent + indent;
 
     while (!current.done) {
-      result += innerIndent + print(current.value[1], indent, innerIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+      result += innerIndent + print(current.value[1], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
 
       current = iterator.next();
 
       if (!current.done) {
-        result += ',' + lineSeparator;
+        result += ',' + spacing;
       }
     }
 
-    result += lineSeparator + prevIndent;
+    result += edgeSpacing + prevIndent;
   }
 
   return result + '}';
 }
 
-function printComplexValue(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins) {
+function printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min) {
   refs = refs.slice();
   if (refs.indexOf(val) > -1) {
     return '[Circular]';
@@ -214,24 +214,24 @@ function printComplexValue(val, indent, prevIndent, lineSeparator, refs, maxDept
   const hitMaxDepth = currentDepth > maxDepth;
 
   if (!hitMaxDepth && val.toJSON && typeof val.toJSON === 'function') {
-    return print(val.toJSON(), indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+    return print(val.toJSON(), indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
   }
 
   const toStringed = toString.call(val);
   if (toStringed === '[object Arguments]') {
-    return hitMaxDepth ? '[Arguments]' : printArguments(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+    return hitMaxDepth ? '[Arguments]' : printArguments(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
   } else if (isToStringedArrayType(toStringed)) {
-    return hitMaxDepth ? '[Array]' : printArray(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+    return hitMaxDepth ? '[Array]' : printArray(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
   } else if (toStringed === '[object Map]') {
-    return hitMaxDepth ? '[Map]' : printMap(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+    return hitMaxDepth ? '[Map]' : printMap(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
   } else if (toStringed === '[object Set]') {
-    return hitMaxDepth ? '[Set]' : printSet(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+    return hitMaxDepth ? '[Set]' : printSet(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
   } else if (typeof val === 'object') {
-    return hitMaxDepth ? '[Object]' : printObject(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+    return hitMaxDepth ? '[Object]' : printObject(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
   }
 }
 
-function printPlugin(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins) {
+function printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min) {
   let match = false;
   let plugin;
 
@@ -249,25 +249,28 @@ function printPlugin(val, indent, prevIndent, lineSeparator, refs, maxDepth, cur
   }
 
   function boundPrint(val) {
-    return print(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+    return print(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
   }
 
   function boundIndent(str) {
     const indentation = prevIndent + indent;
-    return indentation + str.replace(NEWLINE_REGEXP, lineSeparator + indentation);
+    return indentation + str.replace(NEWLINE_REGEXP, '\n' + indentation);
   }
 
-  return plugin.print(val, boundPrint, boundIndent, lineSeparator);
+  return plugin.print(val, boundPrint, boundIndent, {
+    edgeSpacing: edgeSpacing,
+    spacing: spacing
+  });
 }
 
-function print(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins) {
+function print(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min) {
   const basic = printBasicValue(val);
   if (basic) return basic;
 
-  const plugin = printPlugin(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+  const plugin = printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
   if (plugin) return plugin;
 
-  return printComplexValue(val, indent, prevIndent, lineSeparator, refs, maxDepth, currentDepth, plugins);
+  return printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min);
 }
 
 const DEFAULTS = {
@@ -319,12 +322,13 @@ function prettyFormat(val, opts) {
   let refs;
   const prevIndent = '';
   const currentDepth = 0;
-  const lineSeparator = opts.min ? ' ' : '\n';
+  const spacing = opts.min ? ' ' : '\n';
+  const edgeSpacing = opts.min ? '' : '\n';
 
   if (opts && opts.plugins.length) {
     indent = createIndent(opts.indent);
     refs = [];
-    var pluginsResult = printPlugin(val, indent, prevIndent, lineSeparator, refs, opts.maxDepth, currentDepth, opts.plugins);
+    var pluginsResult = printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, opts.maxDepth, currentDepth, opts.plugins, opts.min);
     if (pluginsResult) return pluginsResult;
   }
 
@@ -333,7 +337,7 @@ function prettyFormat(val, opts) {
 
   if (!indent) indent = createIndent(opts.indent);
   if (!refs) refs = [];
-  return printComplexValue(val, indent, prevIndent, lineSeparator, refs, opts.maxDepth, currentDepth, opts.plugins);
+  return printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, opts.maxDepth, currentDepth, opts.plugins, opts.min);
 }
 
 module.exports = prettyFormat;

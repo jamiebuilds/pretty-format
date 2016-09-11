@@ -12,19 +12,19 @@ function traverseChildren(opaqueChildren, cb) {
   }
 }
 
-function printChildren(flatChildren, print, indent, lineSeparator) {
+function printChildren(flatChildren, print, indent, opts) {
   return flatChildren.map(node => {
     if (typeof node === 'object') {
-      return printElement(node, print, indent, lineSeparator);
+      return printElement(node, print, indent, opts);
     } else if (typeof node === 'string') {
       return printString(node);
     } else {
       return print(node);
     }
-  }).join(lineSeparator);
+  }).join(opts.edgeSpacing);
 }
 
-function printProps(props, print, indent, lineSeparator) {
+function printProps(props, print, indent, opts) {
   return Object.keys(props).sort().map(name => {
     if (name === 'children') {
       return '';
@@ -35,19 +35,19 @@ function printProps(props, print, indent, lineSeparator) {
 
     if (typeof prop !== 'string') {
       if (printed.indexOf('\n') !== -1) {
-        printed = '{' + lineSeparator + indent(indent(printed) + lineSeparator + '}');
+        printed = '{' + opts.edgeSpacing + indent(indent(printed) + opts.edgeSpacing + '}');
       } else {
         printed = '{' + printed + '}';
       }
     }
 
-    return lineSeparator + indent(name + '=') + printed;
+    return opts.spacing + indent(name + '=') + printed;
   }).join('');
 }
 
-function printElement(element, print, indent, lineSeparator) {
+function printElement(element, print, indent, opts) {
   let result = '<' + element.type;
-  result += printProps(element.props, print, indent, lineSeparator);
+  result += printProps(element.props, print, indent, opts);
 
   const opaqueChildren = element.props.children;
   if (opaqueChildren) {
@@ -55,8 +55,8 @@ function printElement(element, print, indent, lineSeparator) {
     traverseChildren(opaqueChildren, child => {
       flatChildren.push(child);
     });
-    const children = printChildren(flatChildren, print, indent, lineSeparator);
-    result += '>' + lineSeparator + indent(children) + lineSeparator + '</' + element.type + '>';
+    const children = printChildren(flatChildren, print, indent, opts);
+    result += '>' + opts.edgeSpacing + indent(children) + opts.edgeSpacing + '</' + element.type + '>';
   } else {
     result += ' />';
   }
@@ -68,7 +68,7 @@ module.exports = {
   test(object) {
     return object && object.$$typeof === reactElement;
   },
-  print(val, print, indent, lineSeparator) {
-    return printElement(val, print, indent, lineSeparator);
+  print(val, print, indent, opts) {
+    return printElement(val, print, indent, opts);
   }
 };
