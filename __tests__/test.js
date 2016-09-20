@@ -87,7 +87,12 @@ describe('prettyFormat()', () => {
 
   it('should print an anonymous function', () => {
     const val = () => {};
-    expect(prettyFormat(val)).toEqual('[Function anonymous]');
+    const formatted = prettyFormat(val);
+    // Node 6.5 infers function names
+    expect(
+      formatted === '[Function anonymous]' ||
+      formatted === '[Function val]'
+    ).toBeTruthy();
   });
 
   it('should print a named function', () => {
@@ -312,10 +317,22 @@ describe('prettyFormat()', () => {
     })).toEqual('Object {\n  "value": true,\n}');
   });
 
-  it('calls toJSON on Sets.', () => {
+  it('calls toJSON on Sets', () => {
     const set = new Set([1]);
     set.toJSON = () => 'map';
     expect(prettyFormat(set)).toEqual('"map"');
+  });
+
+  it('disables toJSON calls through options', () => {
+    const value = {apple: 'banana', toJSON: jest.fn(() => '1')};
+    const name = value.toJSON.name || 'anonymous';
+    const set = new Set([value]);
+    set.toJSON = jest.fn(() => 'map');
+    expect(prettyFormat(set, {
+      callToJSON: false,
+    })).toEqual('Set {\n  Object {\n    \"apple\": \"banana\",\n    \"toJSON\": [Function ' + name + '],\n  },\n}');
+    expect(set.toJSON).not.toBeCalled();
+    expect(value.toJSON).not.toBeCalled();
   });
 
   describe('min', () => {
@@ -415,11 +432,11 @@ describe('prettyFormat()', () => {
 
     it('should support an element with complex props and mixed children', () => {
       assertPrintedJSX(
-        React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: () => {} },
+        React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: function onclick(){} },
           'HELLO',
           React.createElement('Mouse'), 'CIAO'
         ),
-        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2,\n    }\n  }\n  onclick={[Function anonymous]}>\n  HELLO\n  <Mouse />\n  CIAO\n</Mouse>'
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2,\n    }\n  }\n  onclick={[Function onclick]}>\n  HELLO\n  <Mouse />\n  CIAO\n</Mouse>'
       );
     });
 
@@ -436,16 +453,16 @@ describe('prettyFormat()', () => {
 
     it('should support everything all together', () => {
       assertPrintedJSX(
-        React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: () => {} },
+        React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: function onclick(){} },
           'HELLO',
-          React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: () => {} },
+          React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: function onclick(){} },
             'HELLO',
             React.createElement('Mouse'),
             'CIAO'
           ),
           'CIAO'
         ),
-        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2,\n    }\n  }\n  onclick={[Function anonymous]}>\n  HELLO\n  <Mouse\n    customProp={\n      Object {\n        "one": "1",\n        "two": 2,\n      }\n    }\n    onclick={[Function anonymous]}>\n    HELLO\n    <Mouse />\n    CIAO\n  </Mouse>\n  CIAO\n</Mouse>'
+        '<Mouse\n  customProp={\n    Object {\n      "one": "1",\n      "two": 2,\n    }\n  }\n  onclick={[Function onclick]}>\n  HELLO\n  <Mouse\n    customProp={\n      Object {\n        "one": "1",\n        "two": 2,\n      }\n    }\n    onclick={[Function onclick]}>\n    HELLO\n    <Mouse />\n    CIAO\n  </Mouse>\n  CIAO\n</Mouse>'
       );
     });
 
@@ -525,16 +542,16 @@ describe('prettyFormat()', () => {
 
     it('it should use the supplied line seperator for min mode', () => {
       assertPrintedJSX(
-        React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: () => {} },
+        React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: function onclick(){} },
           'HELLO',
-          React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: () => {} },
+          React.createElement('Mouse', { customProp: { one: '1', two: 2 }, onclick: function onclick(){} },
             'HELLO',
             React.createElement('Mouse'),
             'CIAO'
           ),
           'CIAO'
         ),
-        '<Mouse customProp={{"one": "1", "two": 2}} onclick={[Function anonymous]}>HELLO<Mouse customProp={{"one": "1", "two": 2}} onclick={[Function anonymous]}>HELLO<Mouse />CIAO</Mouse>CIAO</Mouse>',
+        '<Mouse customProp={{"one": "1", "two": 2}} onclick={[Function onclick]}>HELLO<Mouse customProp={{"one": "1", "two": 2}} onclick={[Function onclick]}>HELLO<Mouse />CIAO</Mouse>CIAO</Mouse>',
         { min: true }
       )
     });
