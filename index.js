@@ -36,8 +36,10 @@ function printNumber(val) {
   return isNegativeZero ? '-0' : '' + val;
 }
 
-function printFunction(val) {
-  if (val.name === '') {
+function printFunction(val, printFunctionName) {
+  if (!printFunctionName) {
+    return '[Function]';
+  } else if (val.name === '') {
     return '[Function anonymous]'
   } else {
     return '[Function ' + val.name + ']';
@@ -52,7 +54,7 @@ function printError(val) {
   return '[' + errorToString.call(val) + ']';
 }
 
-function printBasicValue(val) {
+function printBasicValue(val, printFunctionName) {
   if (val === true || val === false) return '' + val;
   if (val === undefined) return 'undefined';
   if (val === null) return 'null';
@@ -61,14 +63,14 @@ function printBasicValue(val) {
 
   if (typeOf === 'number') return printNumber(val);
   if (typeOf === 'string') return '"' + printString(val) + '"';
-  if (typeOf === 'function') return printFunction(val);
+  if (typeOf === 'function') return printFunction(val, printFunctionName);
   if (typeOf === 'symbol') return printSymbol(val);
 
   const toStringed = toString.call(val);
 
   if (toStringed === '[object WeakMap]') return 'WeakMap {}';
   if (toStringed === '[object WeakSet]') return 'WeakSet {}';
-  if (toStringed === '[object Function]' || toStringed === '[object GeneratorFunction]') return printFunction(val, min);
+  if (toStringed === '[object Function]' || toStringed === '[object GeneratorFunction]') return printFunction(val, printFunctionName);
   if (toStringed === '[object Symbol]') return printSymbol(val);
   if (toStringed === '[object Date]') return toISOString.call(val);
   if (toStringed === '[object Error]') return printError(val);
@@ -81,7 +83,7 @@ function printBasicValue(val) {
   return false;
 }
 
-function printList(list, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON) {
+function printList(list, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName) {
   let body = '';
 
   if (list.length) {
@@ -90,7 +92,7 @@ function printList(list, indent, prevIndent, spacing, edgeSpacing, refs, maxDept
     const innerIndent = prevIndent + indent;
 
     for (let i = 0; i < list.length; i++) {
-      body += innerIndent + print(list[i], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+      body += innerIndent + print(list[i], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
 
       if (i < list.length - 1) {
         body += ',' + spacing;
@@ -103,15 +105,15 @@ function printList(list, indent, prevIndent, spacing, edgeSpacing, refs, maxDept
   return '[' + body + ']';
 }
 
-function printArguments(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON) {
-  return (min ? '' : 'Arguments ') + printList(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+function printArguments(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName) {
+  return (min ? '' : 'Arguments ') + printList(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
 }
 
-function printArray(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON) {
-  return (min ? '' : val.constructor.name + ' ') + printList(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+function printArray(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName) {
+  return (min ? '' : val.constructor.name + ' ') + printList(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
 }
 
-function printMap(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON) {
+function printMap(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName) {
   let result = 'Map {';
   const iterator = val.entries();
   let current = iterator.next();
@@ -122,8 +124,8 @@ function printMap(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth,
     const innerIndent = prevIndent + indent;
 
     while (!current.done) {
-      const key = print(current.value[0], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
-      const value = print(current.value[1], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+      const key = print(current.value[0], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
+      const value = print(current.value[1], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
 
       result += innerIndent + key + ' => ' + value;
 
@@ -140,7 +142,7 @@ function printMap(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth,
   return result + '}';
 }
 
-function printObject(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON) {
+function printObject(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName) {
   const constructor = min ? '' : (val.constructor ?  val.constructor.name + ' ' : 'Object ');
   let result = constructor + '{';
   let keys = Object.keys(val).sort();
@@ -159,8 +161,8 @@ function printObject(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDep
 
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i];
-      const name = print(key, indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
-      const value = print(val[key], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+      const name = print(key, indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
+      const value = print(val[key], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
 
       result += innerIndent + name + ': ' + value;
 
@@ -175,7 +177,7 @@ function printObject(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDep
   return result + '}';
 }
 
-function printSet(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON) {
+function printSet(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName) {
   let result = 'Set {';
   const iterator = val.entries();
   let current = iterator.next();
@@ -186,7 +188,7 @@ function printSet(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth,
     const innerIndent = prevIndent + indent;
 
     while (!current.done) {
-      result += innerIndent + print(current.value[1], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+      result += innerIndent + print(current.value[1], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
 
       current = iterator.next();
 
@@ -201,7 +203,7 @@ function printSet(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth,
   return result + '}';
 }
 
-function printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON) {
+function printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName) {
   refs = refs.slice();
   if (refs.indexOf(val) > -1) {
     return '[Circular]';
@@ -214,24 +216,24 @@ function printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, 
   const hitMaxDepth = currentDepth > maxDepth;
 
   if (callToJSON && !hitMaxDepth && val.toJSON && typeof val.toJSON === 'function') {
-    return print(val.toJSON(), indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+    return print(val.toJSON(), indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
   }
 
   const toStringed = toString.call(val);
   if (toStringed === '[object Arguments]') {
-    return hitMaxDepth ? '[Arguments]' : printArguments(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+    return hitMaxDepth ? '[Arguments]' : printArguments(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
   } else if (isToStringedArrayType(toStringed)) {
-    return hitMaxDepth ? '[Array]' : printArray(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+    return hitMaxDepth ? '[Array]' : printArray(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
   } else if (toStringed === '[object Map]') {
-    return hitMaxDepth ? '[Map]' : printMap(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+    return hitMaxDepth ? '[Map]' : printMap(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
   } else if (toStringed === '[object Set]') {
-    return hitMaxDepth ? '[Set]' : printSet(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+    return hitMaxDepth ? '[Set]' : printSet(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
   } else if (typeof val === 'object') {
-    return hitMaxDepth ? '[Object]' : printObject(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+    return hitMaxDepth ? '[Object]' : printObject(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
   }
 }
 
-function printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON) {
+function printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName) {
   let match = false;
   let plugin;
 
@@ -249,7 +251,7 @@ function printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDep
   }
 
   function boundPrint(val) {
-    return print(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+    return print(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
   }
 
   function boundIndent(str) {
@@ -263,14 +265,14 @@ function printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDep
   });
 }
 
-function print(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON) {
-  const basic = printBasicValue(val);
+function print(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName) {
+  const basic = printBasicValue(val, printFunctionName);
   if (basic) return basic;
 
-  const plugin = printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+  const plugin = printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
   if (plugin) return plugin;
 
-  return printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON);
+  return printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
 }
 
 const DEFAULTS = {
@@ -279,6 +281,7 @@ const DEFAULTS = {
   maxDepth: Infinity,
   min: false,
   plugins: [],
+  printFunctionName: true,
 };
 
 function validateOptions(opts) {
@@ -331,16 +334,16 @@ function prettyFormat(val, opts) {
   if (opts && opts.plugins.length) {
     indent = createIndent(opts.indent);
     refs = [];
-    var pluginsResult = printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, opts.maxDepth, currentDepth, opts.plugins, opts.min, opts.callToJSON);
+    var pluginsResult = printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, opts.maxDepth, currentDepth, opts.plugins, opts.min, opts.callToJSON, opts.printFunctionName);
     if (pluginsResult) return pluginsResult;
   }
 
-  var basicResult = printBasicValue(val);
+  var basicResult = printBasicValue(val, opts.printFunctionName);
   if (basicResult) return basicResult;
 
   if (!indent) indent = createIndent(opts.indent);
   if (!refs) refs = [];
-  return printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, opts.maxDepth, currentDepth, opts.plugins, opts.min, opts.callToJSON);
+  return printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, opts.maxDepth, currentDepth, opts.plugins, opts.min, opts.callToJSON, opts.printFunctionName);
 }
 
 module.exports = prettyFormat;
