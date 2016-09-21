@@ -307,8 +307,6 @@ function normalizeOptions(opts) {
     result.indent = 0;
   }
 
-  result.callToJSON = !!opts.callToJSON;
-
   return result;
 }
 
