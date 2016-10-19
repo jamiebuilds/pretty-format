@@ -74,11 +74,12 @@ prettyFormat(obj, {
 // }
 ```
 
-#### `ReactTestComponent` plugin
+#### `ReactTestComponent` and `ReactElement` plugins
 
 ```js
 var prettyFormat = require('pretty-format');
-var reactPlugin = require('pretty-format/plugins/ReactTestComponent');
+var reactTestPlugin = require('pretty-format/plugins/ReactTestComponent');
+var reactElementPlugin = require('pretty-format/plugins/ReactElement');
 
 var React = require('react');
 var renderer = require('react/lib/ReactTestRenderer');
@@ -86,7 +87,7 @@ var renderer = require('react/lib/ReactTestRenderer');
 var jsx = React.createElement('h1', null, 'Hello World');
 
 prettyFormat(renderer.create(jsx).toJSON(), {
-  plugins: [reactPlugin]
+  plugins: [reactTestPlugin, reactElementPlugin]
 });
 // <h1>
 //   Hello World
