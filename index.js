@@ -143,7 +143,7 @@ function printMap(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth,
 }
 
 function printObject(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName) {
-  const constructor = min || !Object.getPrototypeOf(val) ? '' : (val.constructor ?  val.constructor.name + ' ' : 'Object ');
+  const constructor = min ? '' : (val.constructor ?  val.constructor.name + ' ' : 'null ');
   let result = constructor + '{';
   let keys = Object.keys(val).sort();
   const symbols = getSymbols(val);

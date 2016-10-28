@@ -293,7 +293,7 @@ describe('prettyFormat()', () => {
   });
 
   it('prints objects with no constructor', () => {
-    expect(prettyFormat(Object.create(null))).toEqual('Object {}');
+    expect(prettyFormat(Object.create(null))).toEqual('null {}');
   });
 
   it('calls toJSON and prints its return value', () => {
