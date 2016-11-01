@@ -46,7 +46,14 @@ function printProps(props, print, indent, opts) {
 }
 
 function printElement(element, print, indent, opts) {
-  let result = '<' + element.type;
+  let result = '<';
+  if (typeof element.type === 'string') {
+    result += element.type;
+  } else if (typeof element.type === 'function') {
+    result += element.type.displayName || element.type.name || 'Unknown';
+  } else {
+    result += 'Unknown';
+  }
   result += printProps(element.props, print, indent, opts);
 
   const opaqueChildren = element.props.children;
