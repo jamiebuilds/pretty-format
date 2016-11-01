@@ -515,7 +515,7 @@ describe('prettyFormat()', () => {
     });
 
     it('supports a single element with custom React elements with props', () => {
-      function Cat() { React.createElement('div') };
+      function Cat() { return React.createElement('div') };
       assertPrintedJSX(
         React.createElement('Mouse', {
           prop: React.createElement(Cat, {foo: 'bar'})
