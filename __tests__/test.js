@@ -248,7 +248,18 @@ describe('prettyFormat()', () => {
 
   it('prints an HTMLElement', () => {
     const val = document.createElement('div');
-    expect(prettyFormat(val)).toEqual('not sure yet what it should equal');
+
+    val.className = 'foo';
+    val.id = 'bar';
+
+    val.appendChild(document.createElement('span'));
+
+    const pretty = prettyFormat(val);
+
+    expect(pretty).toContain('HTMLDivElement');
+    expect(pretty).toContain('"className": "foo"');
+    expect(pretty).toContain('"id": "bar"');
+    expect(pretty).toContain('[HTMLSpanElement]');
   });
 
   it('can customize indent', () => {
