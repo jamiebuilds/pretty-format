@@ -532,7 +532,7 @@ describe('prettyFormat()', () => {
       };
       assertPrintedJSX(
         React.createElement('Cat', {}, React.createElement('Mouse')),
-        '<Cat>\n  <Mouse />\n</Cat>',
+        '<Cat>\n  <Mouse />\n</Cat>'
       );
     });
 
