@@ -11,6 +11,9 @@ const symbolToString = Symbol.prototype.toString;
 const SYMBOL_REGEXP = /^Symbol\((.*)\)(.*)$/;
 const NEWLINE_REGEXP = /\n/ig;
 
+const HTML_CONSTANT_REGEXP = /^[A-Z_]+$/;
+const HTML_ELEMENT_REGEXP = /(HTML\w*?Element)/;
+
 const getSymbols = Object.getOwnPropertySymbols || (obj => []);
 
 function isToStringedArrayType(toStringed) {
@@ -28,6 +31,13 @@ function isToStringedArrayType(toStringed) {
     toStringed === '[object Uint16Array]' ||
     toStringed === '[object Uint32Array]'
   );
+}
+
+function isHTMLElement(val, toStringed) {
+    return HTML_ELEMENT_REGEXP.test(toStringed)
+           || (toStringed === '[object Object]'
+               && val.constructor && val.constructor.name
+               && HTML_ELEMENT_REGEXP.test(val.constructor.name));
 }
 
 function printNumber(val) {
@@ -76,6 +86,7 @@ function printBasicValue(val, printFunctionName) {
   if (toStringed === '[object Error]') return printError(val);
   if (toStringed === '[object RegExp]') return regExpToString.call(val);
   if (toStringed === '[object Arguments]' && val.length === 0) return 'Arguments []';
+
   if (isToStringedArrayType(toStringed) && val.length === 0) return val.constructor.name + ' []';
 
   if (val instanceof Error) return printError(val);
@@ -177,6 +188,54 @@ function printObject(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDep
   return result + '}';
 }
 
+function printTruncatedHTMLElement(element) {
+    return `[${element.constructor.name.match(HTML_ELEMENT_REGEXP)[1]}]`;
+}
+
+function printHTMLElement(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName) {
+  const constructor = min ? '' : (val.constructor ?  val.constructor.name + ' ' : 'HTMLElement ');
+  let result = constructor + '{';
+  let keys = [];
+
+  // Object.keys() on an HTMLElement returns nothing, so to generate some useful pretty-printed data, we need to carefully
+  // traverse the hidden properties of the element. Purposefully ignoring stuff that people probably would not test for.
+  for (let hiddenKey in val) {
+    if (hiddenKey === 'constructor' || hiddenKey === 'prototype' || hiddenKey === '__proto__') continue;
+    if (typeof val[hiddenKey] === 'function' || val[hiddenKey] === undefined) continue;
+    if (HTML_CONSTANT_REGEXP.test(hiddenKey)) continue;
+
+    // dataset is not currently supported by JSDOM, but we will want to see the contents eventually when it is (any data-* property)
+    // would be represented; https://github.com/tmpvar/jsdom/issues/961
+    if (toString.call(val[hiddenKey]) === '[object Object]' && hiddenKey !== 'children' && hiddenKey !== 'dataset') continue;
+
+    keys.push(hiddenKey);
+  }
+
+  keys.sort();
+
+  if (keys.length) {
+    result += edgeSpacing;
+
+    const innerIndent = prevIndent + indent;
+
+    for (let i = 0; i < keys.length; i++) {
+      const key = keys[i];
+      const name = print(key, indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
+      const value = print(val[key], indent, innerIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
+
+      result += innerIndent + name + ': ' + value;
+
+      if (i < keys.length - 1) {
+        result += ',' + spacing;
+      }
+    }
+
+    result += (min ? '' : ',') + edgeSpacing + prevIndent;
+  }
+
+  return result + '}';
+}
+
 function printSet(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName) {
   let result = 'Set {';
   const iterator = val.entries();
@@ -228,6 +287,10 @@ function printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, 
     return hitMaxDepth ? '[Map]' : printMap(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
   } else if (toStringed === '[object Set]') {
     return hitMaxDepth ? '[Set]' : printSet(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
+  } else if (isHTMLElement(val, toStringed)) {
+    return currentDepth > 1
+           ? printTruncatedHTMLElement(val)
+           : printHTMLElement(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
   } else if (typeof val === 'object') {
     return hitMaxDepth ? '[Object]' : printObject(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName);
   }

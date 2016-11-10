@@ -246,6 +246,22 @@ describe('prettyFormat()', () => {
     expect(prettyFormat(val)).toEqual('Object {\n  "prop1": Object {},\n  "prop2": Object {},\n}')
   });
 
+  it('prints an HTMLElement', () => {
+    const val = document.createElement('div');
+
+    val.className = 'foo';
+    val.id = 'bar';
+
+    val.appendChild(document.createElement('span'));
+
+    const pretty = prettyFormat(val);
+
+    expect(pretty).toContain('HTMLDivElement');
+    expect(pretty).toContain('"className": "foo"');
+    expect(pretty).toContain('"id": "bar"');
+    expect(pretty).toContain('[HTMLSpanElement]');
+  });
+
   it('can customize indent', () => {
     const val = { prop: 'value' };
     expect(prettyFormat(val, { indent: 4 })).toEqual('Object {\n    "prop": "value",\n}');
