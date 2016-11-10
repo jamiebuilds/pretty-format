@@ -526,13 +526,10 @@ describe('prettyFormat()', () => {
       );
     });
 
-    it('supports a single element with custom React elements with props and a child', () => {
+    it('supports a single element with custom React elements with a child', () => {
       function Cat() {
         return React.createElement('div');
       };
-        React.createElement('Cat', {},
-          React.createElement('Mouse')
-        ),
       assertPrintedJSX(
         React.createElement('Cat', {}, React.createElement('Mouse')),
         '<Cat>\n  <Mouse />\n</Cat>',
