@@ -526,6 +526,16 @@ describe('prettyFormat()', () => {
       );
     });
 
+    it('supports a single element with custom React elements with a child', () => {
+      function Cat() {
+        return React.createElement('div');
+      };
+      assertPrintedJSX(
+        React.createElement('Cat', {}, React.createElement('Mouse')),
+        '<Cat>\n  <Mouse />\n</Cat>'
+      );
+    });
+
     it('supports a single element with React elements with a child', () => {
       assertPrintedJSX(
         React.createElement('Mouse', {

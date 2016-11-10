@@ -47,13 +47,15 @@ function printProps(props, print, indent, opts) {
 
 function printElement(element, print, indent, opts) {
   let result = '<';
+  let elementName;
   if (typeof element.type === 'string') {
-    result += element.type;
+    elementName = element.type;
   } else if (typeof element.type === 'function') {
-    result += element.type.displayName || element.type.name || 'Unknown';
+    elementName = element.type.displayName || element.type.name || 'Unknown';
   } else {
-    result += 'Unknown';
+    elementName = 'Unknown';
   }
+  result += elementName;
   result += printProps(element.props, print, indent, opts);
 
   const opaqueChildren = element.props.children;
@@ -63,7 +65,7 @@ function printElement(element, print, indent, opts) {
       flatChildren.push(child);
     });
     const children = printChildren(flatChildren, print, indent, opts);
-    result += '>' + opts.edgeSpacing + indent(children) + opts.edgeSpacing + '</' + element.type + '>';
+    result += '>' + opts.edgeSpacing + indent(children) + opts.edgeSpacing + '</' + elementName + '>';
   } else {
     result += ' />';
   }
