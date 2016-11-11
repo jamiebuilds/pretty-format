@@ -243,7 +243,13 @@ describe('prettyFormat()', () => {
   it('prints parallel references', () => {
     const inner = {};
     const val = { prop1: inner, prop2: inner };
-    expect(prettyFormat(val)).toEqual('Object {\n  "prop1": Object {},\n  "prop2": Object {},\n}')
+    expect(prettyFormat(val)).toEqual('Object {\n  "prop1": Object {},\n  "prop2": [Circular],\n}')
+  });
+
+  it('prints an HTMLElement', () => {
+    const val = document.createElement('div');
+
+    expect(prettyFormat(val, {maxDepth: 1})).toBe('HTMLDivElement {\n  Symbol(impl): [Object],\n}');
   });
 
   it('can customize indent', () => {

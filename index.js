@@ -204,7 +204,6 @@ function printSet(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth,
 }
 
 function printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName) {
-  refs = refs.slice();
   if (refs.indexOf(val) > -1) {
     return '[Circular]';
   } else {
@@ -323,7 +322,7 @@ function prettyFormat(val, opts) {
   }
 
   let indent;
-  let refs;
+  let refs = [];
   const prevIndent = '';
   const currentDepth = 0;
   const spacing = opts.min ? ' ' : '\n';
@@ -331,7 +330,6 @@ function prettyFormat(val, opts) {
 
   if (opts && opts.plugins.length) {
     indent = createIndent(opts.indent);
-    refs = [];
     var pluginsResult = printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, opts.maxDepth, currentDepth, opts.plugins, opts.min, opts.callToJSON, opts.printFunctionName);
     if (pluginsResult) return pluginsResult;
   }
@@ -340,7 +338,6 @@ function prettyFormat(val, opts) {
   if (basicResult) return basicResult;
 
   if (!indent) indent = createIndent(opts.indent);
-  if (!refs) refs = [];
   return printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, opts.maxDepth, currentDepth, opts.plugins, opts.min, opts.callToJSON, opts.printFunctionName);
 }
 
