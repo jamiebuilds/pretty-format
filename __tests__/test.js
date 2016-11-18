@@ -6,7 +6,6 @@ const React = require('react');
 const ReactTestComponent = require('../plugins/ReactTestComponent');
 const ReactElement = require('../plugins/ReactElement');
 const renderer = require('react/lib/ReactTestRenderer');
-const fs = require('fs');
 
 function returnArguments() {
   return arguments;
@@ -191,17 +190,6 @@ describe('prettyFormat()', () => {
   it('escapes regular expressions', () => {
     const val = /regexp\d/ig;
     expect(prettyFormat(val, {escapeRegex: true})).toEqual('/regexp\\\\d/gi');
-  });
-  
-  it('reads escaped regular expressions from file', () => {
-    const val = /regexp\d/ig;
-    fs.writeFileSync(
-      '__tests__/regexTest', 
-      'module.exports = `' + prettyFormat(val, {escapeRegex: true}) + '`'
-    )
-    const regexFromFile = require.call(null, './regexTest');
-    expect(regexFromFile).toEqual('/regexp\\d/gi');
-    fs.unlinkSync('__tests__/regexTest');
   });
 
   it('prints an empty set', () => {
