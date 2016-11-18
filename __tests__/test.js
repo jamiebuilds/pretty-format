@@ -191,6 +191,11 @@ describe('prettyFormat()', () => {
     const val = /regexp\d/ig;
     expect(prettyFormat(val, {escapeRegex: true})).toEqual('/regexp\\\\d/gi');
   });
+  
+  it('escapes regular expressions nested inside object', () => {
+    const obj = {test: /regexp\d/ig};
+    expect(prettyFormat(obj, {escapeRegex: true})).toEqual('Object {\n  "test": /regexp\\\\d/gi,\n}');
+  });
 
   it('prints an empty set', () => {
     const val = new Set();
