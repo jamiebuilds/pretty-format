@@ -186,6 +186,11 @@ describe('prettyFormat()', () => {
     const val = /regexp/ig;
     expect(prettyFormat(val)).toEqual('/regexp/gi');
   });
+  
+  it('escapes regular expressions', () => {
+    const val = /regexp\d/ig;
+    expect(prettyFormat(val, {escapeRegex: true})).toEqual('/regexp\\\\d/gi');
+  });
 
   it('prints an empty set', () => {
     const val = new Set();
