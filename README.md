@@ -82,7 +82,7 @@ var reactTestPlugin = require('pretty-format/plugins/ReactTestComponent');
 var reactElementPlugin = require('pretty-format/plugins/ReactElement');
 
 var React = require('react');
-var renderer = require('react/lib/ReactTestRenderer');
+var renderer = require('react-test-renderer');
 
 var jsx = React.createElement('h1', null, 'Hello World');
 
