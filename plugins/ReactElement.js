@@ -77,7 +77,7 @@ module.exports = {
   test(object) {
     return object && object.$$typeof === reactElement;
   },
-  print(val, print, indent, opts) {
+  print(val, print, indent, output, opts) {
     return printElement(val, print, indent, opts);
   }
 };

@@ -4,11 +4,11 @@ const printString = require('../printString');
 
 const reactTestInstance = Symbol.for('react.test.json');
 
-function printChildren(children, print, indent, opts) {
-  return children.map(child => printInstance(child, print, indent, opts)).join(opts.edgeSpacing);
+function printChildren(children, print, indent, output, opts) {
+  return children.map(child => printInstance(child, print, indent, output, opts)).join(opts.edgeSpacing);
 }
 
-function printProps(props, print, indent, opts) {
+function printProps(props, print, indent, output, opts) {
   return Object.keys(props).sort().map(name => {
     const prop = props[name];
     let printed = print(prop);
@@ -21,28 +21,28 @@ function printProps(props, print, indent, opts) {
       }
     }
 
-    return opts.spacing + indent(name + '=') + printed;
+    return opts.spacing + indent(output(name, 'prop') + '=') + output(printed, 'value');
   }).join('');
 }
 
-function printInstance(instance, print, indent, opts) {
+function printInstance(instance, print, indent, output, opts) {
   if (typeof instance == 'number') {
     return print(instance);
   } else if (typeof instance === 'string') {
-    return printString(instance);
+    return printString(output(instance, 'content'));
   }
 
-  let result = '<' + instance.type;
+  let result = output('<' + instance.type, 'tag');
 
   if (instance.props) {
-    result += printProps(instance.props, print, indent, opts);
+    result += printProps(instance.props, print, indent, output, opts);
   }
 
   if (instance.children) {
-    const children = printChildren(instance.children, print, indent, opts);
-    result += '>' + opts.edgeSpacing + indent(children) + opts.edgeSpacing + '</' + instance.type + '>';
+    const children = printChildren(instance.children, print, indent, output, opts);
+    result += output('>', 'tag') + opts.edgeSpacing + indent(children) + opts.edgeSpacing + output('</' + instance.type + '>', 'tag');
   } else {
-    result += ' />';
+    result += output(' />', 'tag');
   }
 
   return result;
@@ -52,7 +52,7 @@ module.exports = {
   test(object) {
     return object && object.$$typeof === reactTestInstance;
   },
-  print(val, print, indent, opts) {
-    return printInstance(val, print, indent, opts);
+  print(val, print, indent, output, opts) {
+    return printInstance(val, print, indent, output, opts);
   }
 };
