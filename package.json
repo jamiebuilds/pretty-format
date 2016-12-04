@@ -17,8 +17,10 @@
     "testEnvironment": "node",
     "verbose": true
   },
+  "dependencies": {
+    "chalk": "^1.1.3"
+  },
   "devDependencies": {
-    "chalk": "^1.1.3",
     "jest": "^15.1.1",
     "left-pad": "^1.1.1",
     "react": "15.3.0"
