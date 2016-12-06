@@ -21,7 +21,7 @@ function printProps(props, print, indent, output, opts) {
       }
     }
 
-    return opts.spacing + indent(output(name, 'prop') + '=') + output(printed, 'value');
+    return opts.spacing + indent(output.prop(name) + '=') + output.value(printed);
   }).join('');
 }
 
@@ -29,10 +29,10 @@ function printInstance(instance, print, indent, output, opts) {
   if (typeof instance == 'number') {
     return print(instance);
   } else if (typeof instance === 'string') {
-    return printString(output(instance, 'content'));
+    return printString(output.content(instance));
   }
 
-  let result = output('<' + instance.type, 'tag');
+  let result = output.tag('<' + instance.type);
 
   if (instance.props) {
     result += printProps(instance.props, print, indent, output, opts);
@@ -40,9 +40,9 @@ function printInstance(instance, print, indent, output, opts) {
 
   if (instance.children) {
     const children = printChildren(instance.children, print, indent, output, opts);
-    result += output('>', 'tag') + opts.edgeSpacing + indent(children) + opts.edgeSpacing + output('</' + instance.type + '>', 'tag');
+    result += output.tag('>') + opts.edgeSpacing + indent(children) + opts.edgeSpacing + output.tag('</' + instance.type + '>');
   } else {
-    result += output(' />', 'tag');
+    result += output.tag(' />');
   }
 
   return result;

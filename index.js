@@ -1,6 +1,6 @@
 'use strict';
 
-const chalk = require('chalk');
+const style = require('ansi-styles');
 const printString = require('./printString');
 
 const toString = Object.prototype.toString;
@@ -336,10 +336,17 @@ function prettyFormat(val, opts) {
     opts = normalizeOptions(opts);
   }
 
-  const output = opts.highlight
-    ? (val, type) => chalk[opts.theme[type]](val)
-    : val => val
-  ;
+  let output = {};
+  Object.keys(opts.theme).forEach(key => {
+    if (opts.highlight) {
+      const color = opts.theme[key];
+      const open = style[color].open;
+      const close = style[color].close;
+      output[key] = val => open + val + close;
+    } else {
+      output[key] = val => val;
+    }
+  });
 
   let indent;
   let refs;
