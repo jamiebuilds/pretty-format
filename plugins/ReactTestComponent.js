@@ -21,7 +21,7 @@ function printProps(props, print, indent, output, opts) {
       }
     }
 
-    return opts.spacing + indent(output.prop(name) + '=') + output.value(printed);
+    return opts.spacing + indent(output.prop.open + name + output.prop.close + '=') + output.value.open + printed + output.value.close;
   }).join('');
 }
 
@@ -29,10 +29,10 @@ function printInstance(instance, print, indent, output, opts) {
   if (typeof instance == 'number') {
     return print(instance);
   } else if (typeof instance === 'string') {
-    return printString(output.content(instance));
+    return printString(output.content.open + instance + output.content.close);
   }
 
-  let result = output.tag('<' + instance.type);
+  let result = output.tag.open + '<' + instance.type + output.tag.close;
 
   if (instance.props) {
     result += printProps(instance.props, print, indent, output, opts);
@@ -40,9 +40,9 @@ function printInstance(instance, print, indent, output, opts) {
 
   if (instance.children) {
     const children = printChildren(instance.children, print, indent, output, opts);
-    result += output.tag('>') + opts.edgeSpacing + indent(children) + opts.edgeSpacing + output.tag('</' + instance.type + '>');
+    result += output.tag.open + '>' + output.tag.close + opts.edgeSpacing + indent(children) + opts.edgeSpacing + output.tag.open + '</' + instance.type + '>' + output.tag.close;
   } else {
-    result += output.tag(' />');
+    result += output.tag.open + ' />' + output.tag.close;
   }
 
   return result;

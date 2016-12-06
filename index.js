@@ -339,12 +339,9 @@ function prettyFormat(val, opts) {
   let output = {};
   Object.keys(opts.theme).forEach(key => {
     if (opts.highlight) {
-      const color = opts.theme[key];
-      const open = style[color].open;
-      const close = style[color].close;
-      output[key] = val => open + val + close;
+      output[key] = style[opts.theme[key]];
     } else {
-      output[key] = val => val;
+      output[key] = { open: '', close: '' };
     }
   });
 
