@@ -292,7 +292,7 @@ const DEFAULTS = {
   highlight: false,
   theme: {
     tag: 'cyan',
-    content: 'white',
+    content: 'reset',
     prop: 'yellow',
     value: 'green'
   }
