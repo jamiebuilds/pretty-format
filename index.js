@@ -341,7 +341,7 @@ function prettyFormat(val, opts) {
     if (opts.highlight) {
       output[key] = style[opts.theme[key]];
     } else {
-      output[key] = { open: '', close: '' };
+      output[key] = {open: '', close: ''};
     }
   });
 
