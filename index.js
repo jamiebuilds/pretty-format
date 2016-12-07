@@ -1,5 +1,6 @@
 'use strict';
 
+const style = require('ansi-styles');
 const printString = require('./printString');
 
 const toString = Object.prototype.toString;
@@ -238,7 +239,7 @@ function printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, 
   }
 }
 
-function printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName, escapeRegex) {
+function printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName, escapeRegex, colors) {
   let match = false;
   let plugin;
 
@@ -256,7 +257,7 @@ function printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDep
   }
 
   function boundPrint(val) {
-    return print(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName, escapeRegex);
+    return print(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName, escapeRegex, colors);
   }
 
   function boundIndent(str) {
@@ -264,17 +265,18 @@ function printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDep
     return indentation + str.replace(NEWLINE_REGEXP, '\n' + indentation);
   }
 
-  return plugin.print(val, boundPrint, boundIndent, {
+  const opts = {
     edgeSpacing: edgeSpacing,
     spacing: spacing
-  });
+  };
+  return plugin.print(val, boundPrint, boundIndent, opts, colors);
 }
 
-function print(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName, escapeRegex) {
+function print(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName, escapeRegex, colors) {
   const basic = printBasicValue(val, printFunctionName, escapeRegex);
   if (basic) return basic;
 
-  const plugin = printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName, escapeRegex);
+  const plugin = printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName, escapeRegex, colors);
   if (plugin) return plugin;
 
   return printComplexValue(val, indent, prevIndent, spacing, edgeSpacing, refs, maxDepth, currentDepth, plugins, min, callToJSON, printFunctionName, escapeRegex);
@@ -288,6 +290,13 @@ const DEFAULTS = {
   plugins: [],
   printFunctionName: true,
   escapeRegex: false,
+  highlight: false,
+  theme: {
+    tag: 'cyan',
+    content: 'reset',
+    prop: 'yellow',
+    value: 'green'
+  }
 };
 
 function validateOptions(opts) {
@@ -328,6 +337,15 @@ function prettyFormat(val, opts) {
     opts = normalizeOptions(opts);
   }
 
+  let colors = {};
+  Object.keys(opts.theme).forEach(key => {
+    if (opts.highlight) {
+      colors[key] = style[opts.theme[key]];
+    } else {
+      colors[key] = {open: '', close: ''};
+    }
+  });
+
   let indent;
   let refs;
   const prevIndent = '';
@@ -338,7 +356,7 @@ function prettyFormat(val, opts) {
   if (opts && opts.plugins.length) {
     indent = createIndent(opts.indent);
     refs = [];
-    var pluginsResult = printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, opts.maxDepth, currentDepth, opts.plugins, opts.min, opts.callToJSON, opts.printFunctionName, opts.escapeRegex);
+    var pluginsResult = printPlugin(val, indent, prevIndent, spacing, edgeSpacing, refs, opts.maxDepth, currentDepth, opts.plugins, opts.min, opts.callToJSON, opts.printFunctionName, opts.escapeRegex, colors);
     if (pluginsResult) return pluginsResult;
   }
 

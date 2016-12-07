@@ -17,6 +17,9 @@
     "testEnvironment": "node",
     "verbose": true
   },
+  "dependencies": {
+    "ansi-styles": "^2.2.1"
+  },
   "devDependencies": {
     "chalk": "^1.1.3",
     "jest": "^15.1.1",

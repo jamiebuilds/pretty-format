@@ -12,19 +12,19 @@ function traverseChildren(opaqueChildren, cb) {
   }
 }
 
-function printChildren(flatChildren, print, indent, opts) {
+function printChildren(flatChildren, print, indent, colors, opts) {
   return flatChildren.map(node => {
     if (typeof node === 'object') {
-      return printElement(node, print, indent, opts);
+      return printElement(node, print, indent, colors, opts);
     } else if (typeof node === 'string') {
-      return printString(node);
+      return printString(colors.content.open + node + colors.content.close);
     } else {
       return print(node);
     }
   }).join(opts.edgeSpacing);
 }
 
-function printProps(props, print, indent, opts) {
+function printProps(props, print, indent, colors, opts) {
   return Object.keys(props).sort().map(name => {
     if (name === 'children') {
       return '';
@@ -41,12 +41,12 @@ function printProps(props, print, indent, opts) {
       }
     }
 
-    return opts.spacing + indent(name + '=') + printed;
+    return opts.spacing + indent(colors.prop.open + name + colors.prop.close + '=') + colors.value.open + printed + colors.value.close;
   }).join('');
 }
 
-function printElement(element, print, indent, opts) {
-  let result = '<';
+function printElement(element, print, indent, colors, opts) {
+  let result = colors.tag.open + '<';
   let elementName;
   if (typeof element.type === 'string') {
     elementName = element.type;
@@ -55,8 +55,8 @@ function printElement(element, print, indent, opts) {
   } else {
     elementName = 'Unknown';
   }
-  result += elementName;
-  result += printProps(element.props, print, indent, opts);
+  result += elementName + colors.tag.close;
+  result += printProps(element.props, print, indent, colors, opts);
 
   const opaqueChildren = element.props.children;
   if (opaqueChildren) {
@@ -64,10 +64,10 @@ function printElement(element, print, indent, opts) {
     traverseChildren(opaqueChildren, child => {
       flatChildren.push(child);
     });
-    const children = printChildren(flatChildren, print, indent, opts);
-    result += '>' + opts.edgeSpacing + indent(children) + opts.edgeSpacing + '</' + elementName + '>';
+    const children = printChildren(flatChildren, print, indent, colors, opts);
+    result += colors.tag.open + '>' + colors.tag.close + opts.edgeSpacing + indent(children) + opts.edgeSpacing + colors.tag.open + '</' + elementName + '>' + colors.tag.close;
   } else {
-    result += ' />';
+    result += colors.tag.open + ' />' + colors.tag.close;
   }
 
   return result;
@@ -77,7 +77,7 @@ module.exports = {
   test(object) {
     return object && object.$$typeof === reactElement;
   },
-  print(val, print, indent, opts) {
-    return printElement(val, print, indent, opts);
+  print(val, print, indent, opts, colors) {
+    return printElement(val, print, indent, colors, opts);
   }
 };
