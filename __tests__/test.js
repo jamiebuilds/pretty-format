@@ -256,6 +256,11 @@ describe('prettyFormat()', () => {
     expect(prettyFormat(val)).toEqual('Object {\n  "prop1": Object {},\n  "prop2": Object {},\n}')
   });
 
+  it('prints an HTMLElement', () => {
+    const val = document.createElement('div');
+    expect(prettyFormat(val)).toEqual('not sure yet what it should equal');
+  });
+
   it('can customize indent', () => {
     const val = { prop: 'value' };
     expect(prettyFormat(val, { indent: 4 })).toEqual('Object {\n    "prop": "value",\n}');
