@@ -50,6 +50,45 @@ Object {
 
 `Object`, `Array`, `ArrayBuffer`, `DataView`, `Float32Array`, `Float64Array`, `Int8Array`, `Int16Array`, `Int32Array`, `Uint8Array`, `Uint8ClampedArray`, `Uint16Array`, `Uint32Array`, `arguments`, `Boolean`, `Date`, `Error`, `Function`, `Infinity`, `Map`, `NaN`, `null`, `Number`, `RegExp`, `Set`, `String`, `Symbol`, `undefined`, `WeakMap`, `WeakSet`
 
+### API
+
+```js
+prettyFormat(object);
+prettyFormat(object, options);
+```
+
+Options:
+
+* **`callToJSON`**<br>
+  Type: `boolean`, default: `true`<br>
+  Call `toJSON()` on passed object.
+* **`indent`**<br>
+  Type: `number`, default: `2`<br>
+  Number of spaces for indentation.
+* **`maxDepth`**<br>
+  Type: `number`, default: `Infinity`<br>
+  Print only this number of levels.
+* **`min`**<br>
+  Type: `boolean`, default: `false`<br>
+  Print without whitespace.
+* **`plugins`**<br>
+  Type: `array`, default: `[]`<br>
+  Plugins (see the next section).
+* **`printFunctionName`**<br>
+  Type: `boolean`, default: `true`<br>
+  Print function names or just `[Function]`.
+* **`escapeRegex`**<br>
+  Type: `boolean`, default: `false`<br>
+  Escape special characters in regular expressions.
+* **`highlight`**<br>
+  Type: `boolean`, default: `false`<br>
+  Highlight syntax for terminal (works only with `ReactTestComponent` and `ReactElement` plugins.
+* **`theme`**<br>
+  Type: `object`, default: `{tag: 'cyan', content: 'reset'...}`<br>
+  Syntax highlight theme.
+  Uses [ansi-styles colors](https://github.com/chalk/ansi-styles#colors) + `reset` for no color.
+  Available types: `tag`, `content`, `prop` and `value`.
+
 ### Plugins
 
 Pretty format also supports adding plugins:
