@@ -12,19 +12,19 @@ function traverseChildren(opaqueChildren, cb) {
   }
 }
 
-function printChildren(flatChildren, print, indent, opts) {
+function printChildren(flatChildren, print, indent, output, opts) {
   return flatChildren.map(node => {
     if (typeof node === 'object') {
-      return printElement(node, print, indent, opts);
+      return printElement(node, print, indent, output, opts);
     } else if (typeof node === 'string') {
-      return printString(node);
+      return printString(output.content.open + node + output.content.close);
     } else {
       return print(node);
     }
   }).join(opts.edgeSpacing);
 }
 
-function printProps(props, print, indent, opts) {
+function printProps(props, print, indent, output, opts) {
   return Object.keys(props).sort().map(name => {
     if (name === 'children') {
       return '';
@@ -41,12 +41,12 @@ function printProps(props, print, indent, opts) {
       }
     }
 
-    return opts.spacing + indent(name + '=') + printed;
+    return opts.spacing + indent(output.prop.open + name + output.prop.close + '=') + output.value.open + printed + output.value.close;
   }).join('');
 }
 
-function printElement(element, print, indent, opts) {
-  let result = '<';
+function printElement(element, print, indent, output, opts) {
+  let result = output.tag.open + '<';
   let elementName;
   if (typeof element.type === 'string') {
     elementName = element.type;
@@ -55,8 +55,8 @@ function printElement(element, print, indent, opts) {
   } else {
     elementName = 'Unknown';
   }
-  result += elementName;
-  result += printProps(element.props, print, indent, opts);
+  result += elementName + output.tag.close;
+  result += printProps(element.props, print, indent, output, opts);
 
   const opaqueChildren = element.props.children;
   if (opaqueChildren) {
@@ -64,10 +64,10 @@ function printElement(element, print, indent, opts) {
     traverseChildren(opaqueChildren, child => {
       flatChildren.push(child);
     });
-    const children = printChildren(flatChildren, print, indent, opts);
-    result += '>' + opts.edgeSpacing + indent(children) + opts.edgeSpacing + '</' + elementName + '>';
+    const children = printChildren(flatChildren, print, indent, output, opts);
+    result += output.tag.open + '>' + output.tag.close + opts.edgeSpacing + indent(children) + opts.edgeSpacing + output.tag.open + '</' + elementName + '>' + output.tag.close;
   } else {
-    result += ' />';
+    result += output.tag.open + ' />' + output.tag.close;
   }
 
   return result;
@@ -78,6 +78,6 @@ module.exports = {
     return object && object.$$typeof === reactElement;
   },
   print(val, print, indent, output, opts) {
-    return printElement(val, print, indent, opts);
+    return printElement(val, print, indent, output, opts);
   }
 };
