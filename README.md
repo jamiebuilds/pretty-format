@@ -53,8 +53,8 @@ Object {
 ### API
 
 ```js
-prettyFormat(object);
-prettyFormat(object, options);
+console.log(prettyFormat(object));
+console.log(prettyFormat(object, options));
 ```
 
 Options:
@@ -85,8 +85,8 @@ Options:
   Highlight syntax for terminal (works only with `ReactTestComponent` and `ReactElement` plugins.
 * **`theme`**<br>
   Type: `object`, default: `{tag: 'cyan', content: 'reset'...}`<br>
-  Syntax highlight theme.
-  Uses [ansi-styles colors](https://github.com/chalk/ansi-styles#colors) + `reset` for no color.
+  Syntax highlight theme.<br>
+  Uses [ansi-styles colors](https://github.com/chalk/ansi-styles#colors) + `reset` for no color.<br>
   Available types: `tag`, `content`, `prop` and `value`.
 
 ### Plugins
