@@ -596,5 +596,29 @@ describe('prettyFormat()', () => {
         { min: true }
       )
     });
+
+    it('ReactElement plugin highlights syntax', () => {
+      const jsx = React.createElement('Mouse', {
+        prop: React.createElement('div', null, 'mouse', React.createElement('span', null, 'rat'))
+      });
+      expect(
+        prettyFormat(jsx, {
+          plugins: [ReactElement],
+          highlight: true
+        })
+      ).toMatchSnapshot();
+    });
+
+    it('ReactTestComponent plugin highlights syntax', () => {
+      const jsx = React.createElement('Mouse', {
+        prop: React.createElement('div', null, 'mouse', React.createElement('span', null, 'rat'))
+      });
+      expect(
+        prettyFormat(renderer.create(jsx).toJSON(), {
+          plugins: [ReactTestComponent, ReactElement],
+          highlight: true
+        })
+      ).toMatchSnapshot();
+    });
   });
 });
