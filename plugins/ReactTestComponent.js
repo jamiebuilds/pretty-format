@@ -4,11 +4,11 @@ const printString = require('../printString');
 
 const reactTestInstance = Symbol.for('react.test.json');
 
-function printChildren(children, print, indent, output, opts) {
-  return children.map(child => printInstance(child, print, indent, output, opts)).join(opts.edgeSpacing);
+function printChildren(children, print, indent, colors, opts) {
+  return children.map(child => printInstance(child, print, indent, colors, opts)).join(opts.edgeSpacing);
 }
 
-function printProps(props, print, indent, output, opts) {
+function printProps(props, print, indent, colors, opts) {
   return Object.keys(props).sort().map(name => {
     const prop = props[name];
     let printed = print(prop);
@@ -21,28 +21,28 @@ function printProps(props, print, indent, output, opts) {
       }
     }
 
-    return opts.spacing + indent(output.prop.open + name + output.prop.close + '=') + output.value.open + printed + output.value.close;
+    return opts.spacing + indent(colors.prop.open + name + colors.prop.close + '=') + colors.value.open + printed + colors.value.close;
   }).join('');
 }
 
-function printInstance(instance, print, indent, output, opts) {
+function printInstance(instance, print, indent, colors, opts) {
   if (typeof instance == 'number') {
     return print(instance);
   } else if (typeof instance === 'string') {
-    return printString(output.content.open + instance + output.content.close);
+    return printString(colors.content.open + instance + colors.content.close);
   }
 
-  let result = output.tag.open + '<' + instance.type + output.tag.close;
+  let result = colors.tag.open + '<' + instance.type + colors.tag.close;
 
   if (instance.props) {
-    result += printProps(instance.props, print, indent, output, opts);
+    result += printProps(instance.props, print, indent, colors, opts);
   }
 
   if (instance.children) {
-    const children = printChildren(instance.children, print, indent, output, opts);
-    result += output.tag.open + '>' + output.tag.close + opts.edgeSpacing + indent(children) + opts.edgeSpacing + output.tag.open + '</' + instance.type + '>' + output.tag.close;
+    const children = printChildren(instance.children, print, indent, colors, opts);
+    result += colors.tag.open + '>' + colors.tag.close + opts.edgeSpacing + indent(children) + opts.edgeSpacing + colors.tag.open + '</' + instance.type + '>' + colors.tag.close;
   } else {
-    result += output.tag.open + ' />' + output.tag.close;
+    result += colors.tag.open + ' />' + colors.tag.close;
   }
 
   return result;
@@ -52,7 +52,7 @@ module.exports = {
   test(object) {
     return object && object.$$typeof === reactTestInstance;
   },
-  print(val, print, indent, output, opts) {
-    return printInstance(val, print, indent, output, opts);
+  print(val, print, indent, opts, colors) {
+    return printInstance(val, print, indent, colors, opts);
   }
 };
